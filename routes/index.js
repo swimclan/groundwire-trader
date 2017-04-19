@@ -1,9 +1,8 @@
 var express = require('express');
 var router = express.Router();
+var createPosition = require('../controllers/createPosition');
 
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
-});
+/* GET  */
+router.get('/position/create/:shares/:time', createPosition);
 
 module.exports = router;
