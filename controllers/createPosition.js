@@ -3,6 +3,10 @@
 var Positions = require('../collections/positions');
 
 module.exports = function(req, res, next) {
-    let positions = new Positions();
-    res.json(positions);
+    new Positions()
+    .fetch()
+    .then((positions) => {
+        console.log(positions.at(0).created_at);
+        res.json({message: "Successful"});
+    });
 }
