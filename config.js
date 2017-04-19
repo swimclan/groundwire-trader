@@ -11,6 +11,15 @@ let config = {
                 key: "key"
             }
         }
+    },
+    watchlist: {
+        api: {
+            url: "https://groundwire.co/api/watchlist",
+            secure: {
+                required: true,
+                key: "key"
+            }
+        }
     }
 }
 
