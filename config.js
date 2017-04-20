@@ -36,6 +36,15 @@ let config = {
                 key: "key"
             }
         }
+    },
+    trade: {
+        api: {
+            url: "https://groundwire.co/api/trade",
+            secure: {
+                required: true,
+                key: "key"
+            }
+        }
     }
 }
 

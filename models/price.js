@@ -11,7 +11,6 @@ class Price extends Model {
         + '/'
         + (utils.hasKey('symbol', options) ? options.symbol : 'AAPL')
         + (config.get('price.api.secure.required') ? '?' + config.get('price.api.secure.key') + '=' + process.env.API_KEY : '');
-        console.log(this.url);
     }
     props() {
         return [
