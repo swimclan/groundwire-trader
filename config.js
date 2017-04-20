@@ -20,6 +20,22 @@ let config = {
                 key: "key"
             }
         }
+    },
+    price: {
+        api: {
+            url: "https://groundwire.co/api/price",
+            secure: {
+                required: true,
+                key: "key"
+            }
+        },
+        socket: {
+            url: "https://groundwire.co",
+            secure: {
+                required: true,
+                key: "key"
+            }
+        }
     }
 }
 

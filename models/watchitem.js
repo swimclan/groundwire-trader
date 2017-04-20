@@ -1,11 +1,18 @@
 'use strict';
 
-class WatchItem {
+var Model = require('../lib/Model');
+
+class WatchItem extends Model {
     constructor(options) {
-        this.watchlist = options.watchlist;
-        this.instrument = options.instrument;
-        this.created_at = options.created_at;
-        this.url = options.url;
+        super(options);
+    }
+    props() {
+        return [
+            'watchlist',
+            'instrument',
+            'created_at',
+            'url'
+        ];
     }
 }
 

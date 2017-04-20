@@ -12,3 +12,11 @@ module.exports.parseObjectPath = function(path, obj) {
     }
     return value;
 }
+
+module.exports.hasKey = function(key, obj) {
+    return Object.keys(obj).indexOf(key) !== -1;
+}
+
+module.exports.inArray = function(item, arr) {
+    return arr.indexOf(item) !== -1;
+}

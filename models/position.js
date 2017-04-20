@@ -1,18 +1,25 @@
 'use strict';
 
-class Position {
+var Model = require('../lib/Model');
+
+class Position extends Model {
     constructor(options) {
-        this.account = options.account;
-        this.intraday_quantity = options.intraday_quantity;
-        this.intraday_average_buy_price = options.intraday_average_buy_price;
-        this.url = options.url;
-        this.created_at = options.created_at;
-        this.updated_at = options.updated_at;
-        this.shares_held_for_buys = options.shares_held_for_buys;
-        this.average_buy_price = options.average_buy_price;
-        this.instrument = options.instrument;
-        this.shares_held_for_sells = options.shares_held_for_sells;
-        this.quantity = options.quantity;
+        super(options);
+    }
+    props() {
+        return [
+            'account',
+            'intraday_quantity',
+            'intraday_average_buy_price',
+            'url',
+            'created_at',
+            'updated_at',
+            'shares_held_for_buys',
+            'average_buy_price',
+            'instrument',
+            'shares_held_for_sells',
+            'quantity'
+        ];
     }
 }
 
