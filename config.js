@@ -45,6 +45,15 @@ let config = {
                 key: "key"
             }
         }
+    },
+    queue: {
+        api: {
+            url: "https://groundwire.co/api/queue",
+            secure: {
+                required: true,
+                key: "key"
+            }
+        }
     }
 }
 
