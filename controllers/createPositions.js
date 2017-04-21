@@ -1,29 +1,54 @@
 'use strict';
 
-var Positions = require('../collections/positions');
 var Watchlist = require('../collections/watchlist');
-var Price = require('../models/price');
+var Positions = require('../collections/positions');
 var Trade = require('../models/trade');
 var Queue = require('../collections/queue');
+var utils = require('../utils');
+var async = require('async');
 
 module.exports = function(req, res, next) {
-    var out = {};
-    new Positions()
-    .fetch()
+    let shares = parseInt(req.params.shares);
+
+    new Positions().fetch()
     .then((positions) => {
-        out.positions = {account: positions.at(0).get('account')};
-        return new Watchlist().fetch();
+        let positionList = [];
+        positions.toJSON().forEach((position) => {
+            positionList.push(utils.parseInstrumentIdFromUrl(position.instrument));
+        })
+        tradeWatchlist(res, positionList, shares);
     })
+    .catch((err) => {
+        console.log(err);
+        res.send(err);
+    });
+}
+
+var tradeWatchlist = function(res, positions, shares) {
+    var trades = [];
+    new Watchlist().fetch()
     .then((watchlist) => {
-        out.watchlist = {instrument: watchlist.at(2).get('instrument')};
-        return Price.getInstance({symbol: 'NFLX'}).fetch();
-    })
-    .then((price) => {
-        out.price = {ask: price.get('ask_price')};
-        return new Queue().fetch();
-    })
-    .then((queue) => {
-        out.queue = queue.at(0).get('id');
-        res.json(out);
+        async.eachSeries(watchlist.models, (watchitem, callback) => {
+            let inst = utils.parseInstrumentIdFromUrl(watchitem.get('instrument'));
+            if (utils.inArray(inst, positions)) return callback();
+            Trade.getInstance().create({
+                instrumentId: inst,
+                quantity: shares,
+                type: 'buy'
+            })
+            .then((trade) => {
+                trades.push(trade.toJSON());
+                callback();
+            });
+        }, (error) => {
+            if (error) {
+                console.log(error);
+                res.json({error: error});
+            }
+            res.json(trades) 
+        });
+    }).catch((err) => {
+        console.log(err);
+        res.json({error: err});
     });
 }

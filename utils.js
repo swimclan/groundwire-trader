@@ -20,3 +20,10 @@ module.exports.hasKey = function(key, obj) {
 module.exports.inArray = function(item, arr) {
     return arr.indexOf(item) !== -1;
 }
+
+module.exports.parseInstrumentIdFromUrl = function(url) {
+  var urlChunks = url.split('/');
+  for (var i in urlChunks) {
+    if (urlChunks[i].split('-').length > 1) return urlChunks[i];
+  }
+}
