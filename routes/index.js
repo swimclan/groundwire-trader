@@ -1,8 +1,8 @@
 var express = require('express');
 var router = express.Router();
-var createPosition = require('../controllers/createPosition');
+var createPositions = require('../controllers/createPositions');
 
 /* GET  */
-router.get('/position/create/:shares/:time', createPosition);
+router.get('/positions/create/:shares', createPositions);
 
 module.exports = router;
