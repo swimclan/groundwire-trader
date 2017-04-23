@@ -13,6 +13,11 @@ module.exports.parseObjectPath = function(path, obj) {
     return value;
 }
 
+module.exports.splitStringList = function(list) {
+  var redux = list.replace(/\s/, "");
+  return redux.split(',');
+}
+
 module.exports.hasKey = function(key, obj) {
     return Object.keys(obj).indexOf(key) !== -1;
 }

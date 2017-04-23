@@ -2,16 +2,16 @@
 This is the GroundWire trading application.  It is a server that is configured to execute trades according to various built-in strategies.  Once positions are generated, the server will monitor price action using the Intrinio&trade; Real-Time Exchange websocket stream and implement a trailing stop loss for each stock position that it is configured to manage. The trailing stop loss algorithm is configurable to be less or more agressive in terms of price tracking so as to be intelligent about how to lock in profit margin or minimize loss.
 
 # Version
-1.0.0
+1.1.0
 <br>
 <em>See</em> [`CHANGELOG.md`](./CHANGELOG.md) <em>for more detailed view of all versions</em>
 
 # Routes
 
-| Route                          | Description                                                           |
-| ------------------------------ | --------------------------------------------------------------------- |
-| `/position/create/:quantity`   | This route when requested will kick off the purchasing of all instruments that are in the user's watch list.  Only tradeable instruments will be bought.  Orders with untradeable insrtuments will simply not be filled. |
-|                                |                                                                       |
+| Route                          | HTTP Verb         | Request Body         | Description                                                           |
+| ------------------------------ | ----------------- | -------------------- | --------------------------------------------------------------------- |
+| `/position/create/:quantity`   | GET               | N/A                  | This route when requested will kick off the purchasing of all instruments that are in the user's watch list.  Only tradeable instruments will be bought.  Orders with untradeable insrtuments will simply not be filled. |
+| `/position/trade`              | POST              | (1) `exlusions <string>`: a comma seperated list of tickers to ignore | This route will kick off the trading process for any stock positions currently in the market that are not in the exclusions list |
 
 # Security
 

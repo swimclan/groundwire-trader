@@ -50,6 +50,9 @@ let config = {
             secure: {
                 required: true,
                 key: "key"
+            },
+            defaults: {
+                ticker: 'AAPL'
             }
         }
     },
