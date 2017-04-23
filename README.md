@@ -26,9 +26,19 @@ Where `username` and `password` are the username and password of the user's targ
 
 Also, a required `API_KEY` must be present as an environment variable also.  This key is the target key for accessing the Groundwire trading API.  See [documentation for GroundWire Trading API](https://gitlab.com/ground_wire/node_repo/blob/master/README.md) for more information.
 
+Example:
+```
+API_KEY=ioqbewfvoihub
+```
+
 # Environments
 
 There are currently two environments that are supported in the trading app: (1) `development` and (2) `production`.  The specified environment must be defined as an environment variable using the key `NODE_ENV`.  If `development` is specified, all calls to the trading API will be made locally which means that you must have a locally running version of the GroundWire trading API.  If `production` is specified on `NODE_ENV` then all calls to the trading API will be made to the production endpoint at `groundwire.co/api`. 
+
+Example:
+```
+NODE_ENV=development
+```
 
 # Running Locally
 
