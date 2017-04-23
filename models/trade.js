@@ -7,7 +7,7 @@ var config = require('../config');
 class Trade extends Model {
     constructor(options={}) {
         super(options);
-        this.url = config.get('trade.api.url') + (config.get('trade.api.secure.required') ? '?' + config.get('trade.api.secure.key') + '=' + process.env.API_KEY : '');
+        this.url = config.get(`trade.api.url.${process.env.NODE_ENV}`) + (config.get('trade.api.secure.required') ? '?' + config.get('trade.api.secure.key') + '=' + process.env.API_KEY : '');
     }
     props() {
         return [

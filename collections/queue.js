@@ -8,7 +8,7 @@ class Queue extends Collection {
     constructor() {
         super();
         this.modelClass = Trade;
-        this.url = config.get('queue.api.url') + (config.get('queue.api.secure.required') ? '?' + config.get('queue.api.secure.key') + '=' + process.env.API_KEY : '');
+        this.url = config.get(`queue.api.url.${process.env.NODE_ENV}`) + (config.get('queue.api.secure.required') ? '?' + config.get('queue.api.secure.key') + '=' + process.env.API_KEY : '');
     }
 }
 

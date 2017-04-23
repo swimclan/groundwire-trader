@@ -3,9 +3,16 @@
 var utils = require('./utils');
 
 let config = {
+    timeouts: {
+        buy: 3000,
+        sell: 0
+    },
     positions: {
         api: {
-            url: "https://groundwire.co/api/positions",
+            url: {
+                production: "https://groundwire.co/api/positions",
+                development: "http://localhost:3000/api/positions",
+            },
             secure: {
                 required: true,
                 key: "key"
@@ -14,7 +21,10 @@ let config = {
     },
     watchlist: {
         api: {
-            url: "https://groundwire.co/api/watchlist",
+            url: {
+                production: "https://groundwire.co/api/watchlist",
+                development: "http://localhost:3000/api/watchlist",
+            },
             secure: {
                 required: true,
                 key: "key"
@@ -23,14 +33,20 @@ let config = {
     },
     price: {
         api: {
-            url: "https://groundwire.co/api/price",
+            url: {
+                production: "https://groundwire.co/api/price",
+                development: "http://localhost:3000/api/price",
+            },
             secure: {
                 required: true,
                 key: "key"
             }
         },
         socket: {
-            url: "https://groundwire.co",
+            url: {
+                production: "https://groundwire.co",
+                development: "http://localhost:3000",
+            },
             secure: {
                 required: true,
                 key: "key"
@@ -39,7 +55,10 @@ let config = {
     },
     trade: {
         api: {
-            url: "https://groundwire.co/api/trade",
+            url: {
+                production: "https://groundwire.co/api/trade",
+                development: "http://localhost:3000/api/trade",
+            },
             secure: {
                 required: true,
                 key: "key"
@@ -48,7 +67,10 @@ let config = {
     },
     queue: {
         api: {
-            url: "https://groundwire.co/api/queue",
+            url: {
+                production: "https://groundwire.co/api/queue",
+                development: "http://localhost:3000/api/queue",
+            },
             secure: {
                 required: true,
                 key: "key"

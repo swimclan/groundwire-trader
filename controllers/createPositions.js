@@ -5,6 +5,7 @@ var Positions = require('../collections/positions');
 var Trade = require('../models/trade');
 var Queue = require('../collections/queue');
 var utils = require('../utils');
+var config = require('../config');
 var async = require('async');
 
 module.exports = function(req, res, next) {
@@ -38,7 +39,11 @@ var tradeWatchlist = function(res, positions, shares) {
             })
             .then((trade) => {
                 trades.push(trade.toJSON());
-                callback();
+                setTimeout(callback, config.get('timeouts.buy'));
+            })
+            .catch((err) => {
+                console.log(err);
+                callback(err);
             });
         }, (error) => {
             if (error) {
