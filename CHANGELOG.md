@@ -1,3 +1,7 @@
+### v1.1.1
+#### Feature
+Ability to exclude symbols from tradeable tickers on the stream
+
 ### v1.1.0
 #### Feature
 Ability to connect to GroundWire price socket

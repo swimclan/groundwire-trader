@@ -4,6 +4,8 @@ var utils = require('../utils');
 var _ = require('lodash');
 var Stream = require('../streams/stream');
 var Positions = require('../collections/positions');
+var Instrument = require('../models/instrument');
+var async = require('async');
 
 module.exports = function(req, res, next) {
     var exclusions = [];
@@ -13,17 +15,21 @@ module.exports = function(req, res, next) {
 
     new Positions().fetch()
     .then((positions) => {
-        var priceStream = openStream('GEVO')
-        .then((priceStream) => {
-            res.json({message: "Connected to GroundWire socket"})
+        return excludePositions(exclusions, positions.toJSON());
+    }).catch((err) => { console.log(err) })
+    .then((symbols) => {
+        return symbols.length > 0 ? openStream(symbols[0]) : new Promise((resolve) => { resolve(null) });
+    }).catch((err) => { console.log(err) })
+    .then((priceStream) => {
+        if (priceStream) {
+            res.json({message: "Connected to GroundWire socket"});
             priceStream.on('frame', (frame) => {
                 return null;
             });
-        })
-        .catch((err) => {
-            console.log(err);
-        });
-    });
+        } else {
+            res.json({message: "No tradeable instruments were found"});
+        }
+    }).catch((err) => { console.log(err) });
 }
 
 var openStream = function(ticker) {
@@ -49,5 +55,28 @@ var openStream = function(ticker) {
             error_handler: error_handler
         });
         resolve(outStream);
+    });
+}
+
+var excludePositions = function(exclusions, positions) {
+    var ret = [];
+    return new Promise((resolve, reject) => {
+        async.eachSeries(positions, (position, callback) => {
+            Instrument.getInstance({instrument: utils.parseInstrumentIdFromUrl(position.instrument)})
+            .fetch()
+            .then((inst) => {
+                if (!utils.inArray(inst.toJSON().symbol, exclusions)) {
+                    ret.push(inst.get('symbol'));
+                }
+                callback();
+            });
+        },
+        (err) => {
+            if (err) {
+                console.log(err);
+                reject(err);
+            }
+            resolve(ret);
+        });
     });
 }

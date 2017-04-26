@@ -19,6 +19,21 @@ let config = {
             }
         }
     },
+    instrument: {
+        api: {
+            url: {
+                production: "https://groundwire.co/api/instrument",
+                development: "http://localhost:3000/api/instrument"
+            },
+            secure: {
+                required: true,
+                key: "key"
+            },
+            defaults: {
+                ticker: 'AAPL'
+            }
+        }
+    },
     watchlist: {
         api: {
             url: {
