@@ -24,7 +24,7 @@ module.exports = function(req, res, next) {
         if (priceStream) {
             res.json({message: "Connected to GroundWire socket"});
             priceStream.on('frame', (frame) => {
-                return null;
+                return console.log(frame);
             });
         } else {
             res.json({message: "No tradeable instruments were found"});
@@ -50,6 +50,7 @@ var openStream = function(ticker) {
 
         let outStream = new Stream({
             ticker: ticker,
+            simulate: process.env.SIMULATE,
             connect_handler: connect_handler,
             close_handler: close_handler,
             error_handler: error_handler

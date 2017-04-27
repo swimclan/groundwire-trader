@@ -1,3 +1,7 @@
+### v1.2.0
+#### Feature
+Support for enabling price stream simulations from the API to be able to test strategies against test data.
+
 ### v1.1.1
 #### Feature
 Ability to exclude symbols from tradeable tickers on the stream
