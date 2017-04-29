@@ -7,6 +7,16 @@ let config = {
         buy: 3000,
         sell: 0
     },
+    trading: {
+        spread: {
+            min: 0,
+            max: 0.15
+        },
+        sigma: {
+            min: 0,
+            max: 3
+        }
+    },
     positions: {
         api: {
             url: {
@@ -98,5 +108,14 @@ let config = {
 }
 
 module.exports.get = function(path) {
-    return utils.parseObjectPath(path, config);
+    let params = path.indexOf(',') !== -1 ? path.split(',') : [path];
+    var ret = utils.parseObjectPath(params[0], config);
+    if (params.length > 1) {
+        var searchRx;
+        for (var i=1; i<params.length; i++) {
+            searchRx = new RegExp('(\\$t)(' + i + ')');
+            ret = ret.replace(searchRx, params[i]);
+        }
+    }
+    return ret;
 }

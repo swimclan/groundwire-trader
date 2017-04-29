@@ -2,7 +2,7 @@
 This is the GroundWire trading application.  It is a server that is configured to execute trades according to various built-in strategies.  Once positions are generated, the server will monitor price action using the Intrinio&trade; Real-Time Exchange websocket stream and implement a trailing stop loss for each stock position that it is configured to manage. The trailing stop loss algorithm is configurable to be less or more agressive in terms of price tracking so as to be intelligent about how to lock in profit margin or minimize loss.
 
 # Version
-1.2.0
+1.2.5
 <br>
 <em>See</em> [`CHANGELOG.md`](./CHANGELOG.md) <em>for more detailed view of all versions</em>
 
@@ -48,7 +48,7 @@ After running the server locally, point all your requests to `http://localhost:3
 
 # Simulation Mode
 
-The trading app will allow for simulation mode.  Simply switch the environment variable `SIMULATE` to either 0 or 1: 0 being off and 1 being on.  This will set the interface with the trading API websocket to be in simulation mode and all price updates will be based on a statistical normal distribution of random prices.  Bids, asks and lasts will simulate real-life conditions and follow real price action behaviors as close as possible.
+The trading app will allow for simulation mode.  Simply switch the environment variable `SIMULATE` to either 0 or 1: 0 being off and 1 being on.  This will set the interface with the trading API websocket to be in simulation mode and all price updates will be based on a statistical normal distribution of random prices.  Bids, asks and lasts will simulate real-life conditions and follow real price action behaviors as close as possible.  Price for the simulation will be retrieved from the Yahoo YQL API.
 
 ## System Requirements
 * NodeJS version 6.x and above

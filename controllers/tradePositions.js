@@ -6,12 +6,15 @@ var Stream = require('../streams/stream');
 var Positions = require('../collections/positions');
 var Instrument = require('../models/instrument');
 var async = require('async');
+var config = require('../config');
 
 module.exports = function(req, res, next) {
     var exclusions = [];
     if (_.has(req.body, 'exclusions')) {
         exclusions = exclusions.concat(utils.splitStringList(req.body.exclusions));
     }
+
+    var spread = {};
 
     new Positions().fetch()
     .then((positions) => {
@@ -24,7 +27,19 @@ module.exports = function(req, res, next) {
         if (priceStream) {
             res.json({message: "Connected to GroundWire socket"});
             priceStream.on('frame', (frame) => {
-                return console.log(frame);
+                switch(frame.type) {
+                    case 'bid':
+                        spread.bid = frame.price;
+                        break;
+                    case 'ask':
+                        spread.ask = frame.price;
+                }
+                if (_.has(spread, 'bid') && _.has(spread, 'ask')) {
+                    var maxdiff = config.get('trading.spread.max') * spread.ask;
+                    if (((spread.ask - spread.bid) < maxdiff) && (spread.ask - spread.bid > 0)) {
+                        console.log(spread);
+                    }
+                }
             });
         } else {
             res.json({message: "No tradeable instruments were found"});

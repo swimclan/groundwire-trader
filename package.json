@@ -1,6 +1,6 @@
 {
   "name": "gwtrader",
-  "version": "1.2.0",
+  "version": "1.2.5",
   "private": true,
   "scripts": {
     "start": "node ./bin/www"
@@ -16,6 +16,7 @@
     "jStat": "^1.5.3",
     "jade": "~1.11.0",
     "lodash": "^4.17.4",
+    "moment": "^2.18.1",
     "morgan": "~1.6.1",
     "query-string": "^4.3.4",
     "request": "^2.81.0",

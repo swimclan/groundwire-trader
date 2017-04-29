@@ -1,3 +1,7 @@
+### v1.2.5
+#### Feature
+Configurable bid/ask spread-tolerance to be able to tune the followed price as close as possible to Robinhood app
+
 ### v1.2.0
 #### Feature
 Support for enabling price stream simulations from the API to be able to test strategies against test data.
