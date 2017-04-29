@@ -26,6 +26,13 @@ module.exports = function(req, res, next) {
     .then((priceStream) => {
         if (priceStream) {
             res.json({message: "Connected to GroundWire socket"});
+            console.log('-------------------------------------');
+            console.log('T R A D I N G   C O N F I G');
+            console.log('-------------------------------------');
+            console.log('simulation mode:', process.env.SIMULATE ? 'on' : 'off');
+            console.log('Max spread:', config.get('trading.spread.max'));
+            console.log('Min spread:', config.get('trading.spread.min'));
+            console.log('-------------------------------------');
             priceStream.on('frame', (frame) => {
                 switch(frame.type) {
                     case 'bid':
@@ -33,10 +40,14 @@ module.exports = function(req, res, next) {
                         break;
                     case 'ask':
                         spread.ask = frame.price;
+                        break;
+                    case 'last':
+                        spread.last = frame.price;
                 }
                 if (_.has(spread, 'bid') && _.has(spread, 'ask')) {
                     var maxdiff = config.get('trading.spread.max') * spread.ask;
-                    if (((spread.ask - spread.bid) < maxdiff) && (spread.ask - spread.bid > 0)) {
+                    var mindiff = config.get('trading.spread.min') * spread.ask;
+                    if (((spread.ask - spread.bid) < maxdiff) && ((spread.ask - spread.bid) > mindiff) && (spread.ask - spread.bid > 0)) {
                         console.log(spread);
                     }
                 }
