@@ -10,11 +10,20 @@ let config = {
     trading: {
         spread: {
             min: 0,
-            max: 0.02
+            max: 0.0325
         },
         sigma: {
             min: 0,
             max: 3
+        },
+        strategies: {
+            minStopMargin: 0.001,
+            slope: {
+                c: 2.0
+            },
+            profit: {
+                c: 1.0
+            }
         }
     },
     positions: {

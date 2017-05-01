@@ -1,3 +1,7 @@
+### v1.3.0
+#### Feature
+Introduced the Slope Model stop-loss strategy in the trading feature.  Ability to track a price stream for a single stock in the watch list and track the price changes with a trailing stop loss that follows the slope model.  [Read about the slope model](./strategies/README.md) here.
+
 ### v1.2.5
 #### Feature
 Configurable bid/ask spread-tolerance to be able to tune the followed price as close as possible to Robinhood app

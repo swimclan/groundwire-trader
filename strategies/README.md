@@ -10,5 +10,4 @@ Each strategy function will be in its own file.  For instance a function that ca
 
 | Strategy             | Description                                            |
 | -------------------- | ------------------------------------------------------ |
-| Profit Model         | This strategy will raise the stop loss differential based on the current positive profit margin |
-|
+| Slope Model          | This strategy calculates the next stop loss price by directly correlating it the the slope in the price action between each tick |

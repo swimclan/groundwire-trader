@@ -32,3 +32,17 @@ module.exports.parseInstrumentIdFromUrl = function(url) {
     if (urlChunks[i].split('-').length > 1) return urlChunks[i];
   }
 }
+
+module.exports.throwError = function(error, res) {
+    console.log(error);
+    res.status(400);
+    return res.json({error: error});
+}
+
+module.exports.nullPromise = function() {
+    return new Promise((resolve, reject) => { resolve(null); });
+}
+
+module.exports.moneyify = function(n) {
+  return (Math.floor(n*100)/100);
+}

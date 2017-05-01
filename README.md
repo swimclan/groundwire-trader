@@ -11,7 +11,7 @@ This is the GroundWire trading application.  It is a server that is configured t
 | Route                          | HTTP Verb         | Request Body         | Description                                                           |
 | ------------------------------ | ----------------- | -------------------- | --------------------------------------------------------------------- |
 | `/position/create/:quantity`   | GET               | N/A                  | This route when requested will kick off the purchasing of all instruments that are in the user's watch list.  Only tradeable instruments will be bought.  Orders with untradeable insrtuments will simply not be filled. |
-| `/position/trade`              | POST              | (1) `exlusions <string>`: a comma seperated list of tickers to ignore | This route will kick off the trading process for any stock positions currently in the market that are not in the exclusions list |
+| `/position/trade`              | POST              | (1) `exlusions <string>`: a comma seperated list of tickers to ignore<br>(2) `stopmargin <float>`: A decimal value representing the percentage of the initial stop loss margin of the strategy in use | This route will kick off the trading process for any stock positions currently in the market that are not in the exclusions list |
 
 # Security
 

@@ -20,8 +20,7 @@ module.exports = function(req, res, next) {
         tradeWatchlist(res, positionList, shares);
     })
     .catch((err) => {
-        console.log(err);
-        res.send(err);
+        utils.throwError(err, res);
     });
 }
 
@@ -47,13 +46,11 @@ var tradeWatchlist = function(res, positions, shares) {
             });
         }, (error) => {
             if (error) {
-                console.log(error);
-                res.json({error: error});
+                utils.throwError(error, res);
             }
             res.json(trades) 
         });
     }).catch((err) => {
-        console.log(err);
-        res.json({error: err});
+        utils.throwError(err, res);
     });
 }
