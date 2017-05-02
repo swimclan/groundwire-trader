@@ -1,5 +1,6 @@
 | Version              | Type      | Description                                                                                               |
 | -------------------- | --------- | --------------------------------------------------------------------------------------------------------- |
+| **v1.4.0**           | *Feature* | Ability to track multiple stocks on multiple sockets at once.  Allows user to have many positions in the market simultaneously |
 | **v1.3.1**           | *Fix*     | Fixed a bug where simulation mode was not defaulting to off when no environment variable was set |
 | **v1.3.0**           | *Feature* | Introduced the Slope Model stop-loss strategy in the trading feature.  Ability to track a price stream for a single stock in the watch list and track the price changes with a trailing stop loss that follows the slope model.  [Read about the slope model](./strategies/README.md) here. |
 | **v1.2.5**           | *Feature* | Configurable bid/ask spread-tolerance to be able to tune the followed price as close as possible to Robinhood app |

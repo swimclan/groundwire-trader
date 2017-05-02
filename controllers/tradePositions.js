@@ -21,79 +21,25 @@ module.exports = function(req, res, next) {
     
     if (!stopMargin) return utils.throwError("Invalid stop margin provided", res);
 
-    // The container that will house all data about the state of the current tick of market data
-    var tick = {};
-    var stopPrice, simulation_state;
-    switch (process.env.SIMULATE) {
-        case 0:
-            simulation_state = 'on';
-            break;
-        default:
-            simulation_state = 'off';
-    }
-
     new Positions().fetch()
     .then((positions) => {
         return excludePositions(exclusions, positions.toJSON());
     }).catch((err) => { utils.throwError(err, res) })
     .then((symbols) => {
-        return symbols.length > 0 ? openStream(symbols[0]) : utils.nullPromise();
+        async.eachOfSeries(symbols, (symbol, i, callback) => {
+            openStream(symbols[i])
+            .then((stream) => {
+                return trackPosition(stream, stopMargin)
+            }).catch((err) => { callback(err); })
+            .then(() => {
+                callback();
+            }).catch((err) => { callback(err); });
+        },
+        (err) => {
+            if (err) utils.throwError(err, res);
+            res.json({message: "Connected to the GroundWire Price Stream"});
+        });
     }).catch((err) => { utils.throwError(err, res) })
-    .then((priceStream) => {
-        if (priceStream) {
-            res.json({message: "Connected to GroundWire socket"});
-            console.log('-------------------------------------');
-            console.log('T R A D I N G   C O N F I G');
-            console.log('-------------------------------------');
-            console.log('simulation mode:', simulation_state);
-            console.log('initial stop margin:', stopMargin);
-            console.log('Max spread:', config.get('trading.spread.max'));
-            console.log('Min spread:', config.get('trading.spread.min'));
-            console.log('-------------------------------------');
-            priceStream.on('frame', (frame) => {
-                switch(frame.type) {
-                    case 'bid':
-                        tick.bid = frame.price;
-                        break;
-                    case 'ask':
-                        tick.ask = frame.price;
-                        break;
-                    case 'last':
-                        tick.last = frame.price;
-                }
-                if (_.has(tick, 'bid') && _.has(tick, 'ask')) {
-                    var maxdiff = config.get('trading.spread.max') * tick.ask;
-                    var mindiff = config.get('trading.spread.min') * tick.ask;
-                    if (((tick.ask - tick.bid) < maxdiff) && ((tick.ask - tick.bid) > mindiff) && (tick.ask - tick.bid > 0)) {
-                        // Initial stop price or calculated new stopPrice
-                        stopPrice = !stopPrice ?
-                        tick.ask / (1 + stopMargin) :
-                        stopPrice = tick.lastask ? strategies.slope(tick.lastask, tick.ask, stopPrice, config.get('trading.strategies.slope.c'), config.get('trading.strategies.minStopMargin')) : stopPrice;
-                        
-                        tick.stop = utils.moneyify(stopPrice);
-                        
-                        if (tick.stop < tick.ask) {
-                            console.log(tick);
-                            tick.lastbid = _.has(tick, 'bid') ? tick.bid : null;
-                            tick.lastask = _.has(tick, 'ask') ? tick.ask : null;
-                            tick.lastlast = _.has(tick, 'last') ? tick.last : null;
-                        } else {
-                            console.log('---------------------------------------------');
-                            console.log("Stopped out at:",tick.stop);
-                            console.log("Ask price was:", tick.ask);
-                            console.log('---------------------------------------------');
-                            priceStream.disconnect();
-                        }
-                    }
-                }
-            });
-            priceStream.on('close', (reason) => {
-                console.log("Exited price stream:", reason);
-            });
-        } else {
-            res.json({message: "No tradeable instruments were found"});
-        }
-    }).catch((err) => { utils.throwError(err, res) });
 }
 
 var openStream = function(ticker) {
@@ -143,5 +89,78 @@ var excludePositions = function(exclusions, positions) {
             }
             resolve(ret);
         });
+    });
+}
+
+var trackPosition = function(priceStream, stopMargin) {
+    return new Promise((resolve, reject) => {
+        // The container that will house all data about the state of the current tick of market data
+        var tick = {};
+
+        var stopPrice, simulation_state;
+
+        switch (process.env.SIMULATE) {
+            case 0:
+                simulation_state = 'on';
+                break;
+            default:
+                simulation_state = 'off';
+        }
+
+        if (priceStream) {
+            console.log('-------------------------------------');
+            console.log('T R A D I N G   C O N F I G');
+            console.log('-------------------------------------');
+            console.log('simulation mode:', simulation_state);
+            console.log('initial stop margin:', stopMargin);
+            console.log('Max spread:', config.get('trading.spread.max'));
+            console.log('Min spread:', config.get('trading.spread.min'));
+            console.log('-------------------------------------');
+            priceStream.on('frame', (frame) => {
+                tick.ticker = frame.ticker;
+                switch(frame.type) {
+                    case 'bid':
+                        tick.bid = frame.price;
+                        break;
+                    case 'ask':
+                        tick.ask = frame.price;
+                        break;
+                    case 'last':
+                        tick.last = frame.price;
+                }
+                if (_.has(tick, 'bid') && _.has(tick, 'ask')) {
+                    var maxdiff = config.get('trading.spread.max') * tick.ask;
+                    var mindiff = config.get('trading.spread.min') * tick.ask;
+                    if (((tick.ask - tick.bid) < maxdiff) && ((tick.ask - tick.bid) > mindiff) && (tick.ask - tick.bid > 0)) {
+                        // Initial stop price or calculated new stopPrice
+                        stopPrice = !stopPrice ?
+                        tick.ask / (1 + stopMargin) :
+                        stopPrice = tick.lastask ? strategies.slope(tick.lastask, tick.ask, stopPrice, config.get('trading.strategies.slope.c'), config.get('trading.strategies.minStopMargin')) : stopPrice;
+                        
+                        tick.stop = utils.moneyify(stopPrice);
+                        
+                        if (tick.stop < tick.ask) {
+                            console.log(tick);
+                            tick.lastbid = _.has(tick, 'bid') ? tick.bid : null;
+                            tick.lastask = _.has(tick, 'ask') ? tick.ask : null;
+                            tick.lastlast = _.has(tick, 'last') ? tick.last : null;
+                        } else {
+                            console.log('---------------------------------------------');
+                            console.log("Ticker:", tick.ticker);
+                            console.log("Stopped out at:",tick.stop);
+                            console.log("Ask price was:", tick.ask);
+                            console.log('---------------------------------------------');
+                            priceStream.disconnect();
+                        }
+                    }
+                }
+            });
+            priceStream.on('close', (reason) => {
+                console.log("Exited price stream:", reason);
+            });
+            resolve();
+        } else {
+            reject("No tradeable instruments were found...");
+        }
     });
 }
