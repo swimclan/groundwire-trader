@@ -23,7 +23,14 @@ module.exports = function(req, res, next) {
 
     // The container that will house all data about the state of the current tick of market data
     var tick = {};
-    var stopPrice;
+    var stopPrice, simulation_state;
+    switch (process.env.SIMULATE) {
+        case 0:
+            simulation_state = 'on';
+            break;
+        default:
+            simulation_state = 'off';
+    }
 
     new Positions().fetch()
     .then((positions) => {
@@ -38,7 +45,7 @@ module.exports = function(req, res, next) {
             console.log('-------------------------------------');
             console.log('T R A D I N G   C O N F I G');
             console.log('-------------------------------------');
-            console.log('simulation mode:', process.env.SIMULATE ? 'on' : 'off');
+            console.log('simulation mode:', simulation_state);
             console.log('initial stop margin:', stopMargin);
             console.log('Max spread:', config.get('trading.spread.max'));
             console.log('Min spread:', config.get('trading.spread.min'));

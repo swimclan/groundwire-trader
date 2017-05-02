@@ -10,7 +10,7 @@ let config = {
     trading: {
         spread: {
             min: 0,
-            max: 0.0325
+            max: 0.2
         },
         sigma: {
             min: 0,
