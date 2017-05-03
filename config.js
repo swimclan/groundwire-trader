@@ -17,9 +17,9 @@ let config = {
             max: 3
         },
         strategies: {
-            minStopMargin: 0.001,
+            minStopMargin: 0.0025,
             slope: {
-                c: 2.0
+                c: 1.1
             },
             profit: {
                 c: 1.0
