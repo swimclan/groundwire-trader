@@ -101,10 +101,10 @@ var trackPosition = function(priceStream, stopMargin) {
 
         switch (process.env.SIMULATE) {
             case 0:
-                simulation_state = 'on';
+                simulation_state = 'off';
                 break;
             default:
-                simulation_state = 'off';
+                simulation_state = 'on';
         }
 
         if (priceStream) {
