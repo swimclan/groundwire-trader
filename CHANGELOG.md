@@ -1,5 +1,6 @@
 | Version              | Type      | Description                                                                                               |
 | -------------------- | --------- | --------------------------------------------------------------------------------------------------------- |
+| **v1.5.0**           | *Feature* | Ability for the trading controller to execute sell order when stop loss value is hit by the best ask price |
 | **v1.4.1**           | *Fix*     | Fixed a bug where the simulator was not logging the correct mode on or off                                |
 | **v1.4.0**           | *Feature* | Ability to track multiple stocks on multiple sockets at once.  Allows user to have many positions in the market simultaneously |
 | **v1.3.1**           | *Fix*     | Fixed a bug where simulation mode was not defaulting to off when no environment variable was set |

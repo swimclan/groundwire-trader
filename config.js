@@ -29,8 +29,8 @@ let config = {
     positions: {
         api: {
             url: {
-                production: "https://groundwire.co/api/positions",
-                development: "http://localhost:3000/api/positions",
+                production: "https://api.groundwire.co/v1/positions",
+                development: "http://localhost:3000/v1/positions",
             },
             secure: {
                 required: true,
@@ -41,8 +41,8 @@ let config = {
     instrument: {
         api: {
             url: {
-                production: "https://groundwire.co/api/instrument",
-                development: "http://localhost:3000/api/instrument"
+                production: "https://api.groundwire.co/v1/instrument",
+                development: "http://localhost:3000/v1/instrument"
             },
             secure: {
                 required: true,
@@ -56,8 +56,8 @@ let config = {
     watchlist: {
         api: {
             url: {
-                production: "https://groundwire.co/api/watchlist",
-                development: "http://localhost:3000/api/watchlist",
+                production: "https://api.groundwire.co/v1/watchlist",
+                development: "http://localhost:3000/v1/watchlist",
             },
             secure: {
                 required: true,
@@ -68,8 +68,8 @@ let config = {
     price: {
         api: {
             url: {
-                production: "https://groundwire.co/api/price",
-                development: "http://localhost:3000/api/price",
+                production: "https://api.groundwire.co/v1/price",
+                development: "http://localhost:3000/v1/price",
             },
             secure: {
                 required: true,
@@ -78,7 +78,7 @@ let config = {
         },
         socket: {
             url: {
-                production: "https://groundwire.co",
+                production: "https://api.groundwire.co",
                 development: "http://localhost:3000",
             },
             secure: {
@@ -93,8 +93,8 @@ let config = {
     trade: {
         api: {
             url: {
-                production: "https://groundwire.co/api/trade",
-                development: "http://localhost:3000/api/trade",
+                production: "https://api.groundwire.co/v1/trade",
+                development: "http://localhost:3000/v1/trade",
             },
             secure: {
                 required: true,
@@ -105,8 +105,8 @@ let config = {
     queue: {
         api: {
             url: {
-                production: "https://groundwire.co/api/queue",
-                development: "http://localhost:3000/api/queue",
+                production: "https://api.groundwire.co/v1/queue",
+                development: "http://localhost:3000/v1/queue",
             },
             secure: {
                 required: true,

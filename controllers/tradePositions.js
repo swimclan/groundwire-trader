@@ -5,6 +5,7 @@ var _ = require('lodash');
 var Stream = require('../streams/stream');
 var Positions = require('../collections/positions');
 var Instrument = require('../models/instrument');
+var Trade = require('../models/trade');
 var async = require('async');
 var config = require('../config');
 var strategies = {slope: require('../strategies/slope')};
@@ -25,11 +26,11 @@ module.exports = function(req, res, next) {
     .then((positions) => {
         return excludePositions(exclusions, positions.toJSON());
     }).catch((err) => { utils.throwError(err, res) })
-    .then((symbols) => {
-        async.eachOfSeries(symbols, (symbol, i, callback) => {
-            openStream(symbols[i])
+    .then((tradeables) => {
+        async.eachOfSeries(tradeables, (tradeable, i, callback) => {
+            openStream(tradeable.symbol)
             .then((stream) => {
-                return trackPosition(stream, stopMargin)
+                return trackPosition(stream, tradeable, stopMargin)
             }).catch((err) => { callback(err); })
             .then(() => {
                 callback();
@@ -77,7 +78,7 @@ var excludePositions = function(exclusions, positions) {
             .fetch()
             .then((inst) => {
                 if (!utils.inArray(inst.toJSON().symbol, exclusions)) {
-                    ret.push(inst.get('symbol'));
+                    ret.push({symbol: inst.get('symbol'), quantity: parseInt(position.quantity)});
                 }
                 callback();
             });
@@ -92,7 +93,7 @@ var excludePositions = function(exclusions, positions) {
     });
 }
 
-var trackPosition = function(priceStream, stopMargin) {
+var trackPosition = function(priceStream, instrument, stopMargin) {
     return new Promise((resolve, reject) => {
         // The container that will house all data about the state of the current tick of market data
         var tick = {};
@@ -111,6 +112,7 @@ var trackPosition = function(priceStream, stopMargin) {
             console.log('-------------------------------------');
             console.log('T R A D I N G   C O N F I G');
             console.log('-------------------------------------');
+            console.log('Ticker:', instrument.symbol);
             console.log('simulation mode:', simulation_state);
             console.log('initial stop margin:', stopMargin);
             console.log('Max spread:', config.get('trading.spread.max'));
@@ -145,12 +147,17 @@ var trackPosition = function(priceStream, stopMargin) {
                             tick.lastask = _.has(tick, 'ask') ? tick.ask : null;
                             tick.lastlast = _.has(tick, 'last') ? tick.last : null;
                         } else {
-                            console.log('---------------------------------------------');
-                            console.log("Ticker:", tick.ticker);
-                            console.log("Stopped out at:",tick.stop);
-                            console.log("Ask price was:", tick.ask);
-                            console.log('---------------------------------------------');
                             priceStream.disconnect();
+                            sellPosition(instrument, tick.ask)
+                            .then((confirm) => {
+                                console.log('---------------------------------------------');
+                                console.log("Ticker:", tick.ticker);
+                                console.log("Stopped out at:",tick.stop);
+                                console.log("Ask price was:", tick.ask);
+                                console.log('Trade confirmation ===>');
+                                console.log(confirm.toJSON());
+                                console.log('---------------------------------------------');
+                            }).catch((err) => { return null });
                         }
                     }
                 }
@@ -162,5 +169,19 @@ var trackPosition = function(priceStream, stopMargin) {
         } else {
             reject("No tradeable instruments were found...");
         }
+    });
+}
+
+var sellPosition = function(instrument, price) {
+    return new Promise((resolve, reject) => {
+        Trade.getInstance().create({
+            symbol: instrument.symbol,
+            quantity: instrument.quantity,
+            type: 'sell',
+            stop_price: price
+        })
+        .then((trade) => {
+            resolve(trade);
+        }).catch((err) => { reject(err); });
     });
 }
