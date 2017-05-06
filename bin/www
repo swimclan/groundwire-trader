@@ -3,12 +3,9 @@
 /**
  * Module dependencies.
  */
-
 var app = require('../app');
 var debug = require('debug')('gwtrader:server');
 var http = require('http');
-var fs = require('fs');
-var path = require('path');
 
 /**
  * Get port from environment and store in Express.
@@ -16,13 +13,6 @@ var path = require('path');
 
 var port = normalizePort(process.env.PORT || '3001');
 app.set('port', port);
-
-/**
- * Assign SSL cert and key
- */
-
-app.set('key', fs.readFileSync(path.resolve(__dirname + '/..' + process.env.SSL_KEY)));
-app.set('cert', fs.readFileSync(path.resolve(__dirname + '/..' + process.env.SSL_PEM)));
 
 /**
  * Create HTTP server.
