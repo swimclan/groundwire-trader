@@ -1,6 +1,7 @@
 'use strict';
-
+var fs = require('fs');
 var utils = require('./utils');
+var path = require('path');
 
 let config = {
     timeouts: {
@@ -23,6 +24,38 @@ let config = {
             },
             profit: {
                 c: 1.0
+            }
+        }
+    },
+    ajax: {
+        fetch: {
+            options: {
+                method: 'get',
+                auth: {
+                    user: process.env.USERNAME,
+                    pass: process.env.PASSWORD
+                },
+                agentOptions: {
+                    cert: fs.readFileSync(path.resolve(__dirname + process.env.SSL_CRT)),
+                    key: fs.readFileSync(path.resolve(__dirname + process.env.SSL_KEY)),
+                    ca: fs.readFileSync(path.resolve(__dirname + process.env.SSL_PEM)),
+                    passphrase: process.env.SSL_PASSPHRASE
+                }
+            }
+        },
+        create: {
+            options: {
+                method: 'post',
+                auth: {
+                    user: process.env.USERNAME,
+                    pass: process.env.PASSWORD
+                },
+                agentOptions: {
+                    cert: fs.readFileSync(path.resolve(__dirname + process.env.SSL_CRT)),
+                    key: fs.readFileSync(path.resolve(__dirname + process.env.SSL_KEY)),
+                    ca: fs.readFileSync(path.resolve(__dirname + process.env.SSL_PEM)),
+                    passphrase: process.env.SSL_PASSPHRASE
+                }
             }
         }
     },

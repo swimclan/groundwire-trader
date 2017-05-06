@@ -154,6 +154,7 @@ var trackPosition = function(priceStream, instrument, stopMargin) {
                                 console.log("Ticker:", tick.ticker);
                                 console.log("Stopped out at:",tick.stop);
                                 console.log("Ask price was:", tick.ask);
+                                console.log("Quantity:", instrument.quantity);
                                 console.log('Trade confirmation ===>');
                                 console.log(confirm.toJSON());
                                 console.log('---------------------------------------------');
@@ -176,9 +177,9 @@ var sellPosition = function(instrument, price) {
     return new Promise((resolve, reject) => {
         Trade.getInstance().create({
             symbol: instrument.symbol,
-            quantity: instrument.quantity,
+            quantity: instrument.quantity.toString(),
             type: 'sell',
-            stop_price: price
+            stop_price: price.toString()
         })
         .then((trade) => {
             resolve(trade);

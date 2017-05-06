@@ -2,7 +2,7 @@
 This is the GroundWire trading application.  It is a server that is configured to execute trades according to various built-in strategies.  Once positions are generated, the server will monitor price action using the Intrinio&trade; Real-Time Exchange websocket stream and implement a trailing stop loss for each stock position that it is configured to manage. The trailing stop loss algorithm is configurable to be less or more agressive in terms of price tracking so as to be intelligent about how to lock in profit margin or minimize loss.
 
 # Version
-1.5.0
+1.5.1
 <br>
 <em>See</em> [`CHANGELOG.md`](./CHANGELOG.md) <em>for more detailed view of all versions</em>
 
@@ -29,6 +29,17 @@ Also, a required `API_KEY` must be present as an environment variable also.  Thi
 Example:
 ```
 API_KEY=ioqbewfvoihub
+```
+
+## SSL
+
+SSL Certificates are supported for being able to send secure requests to the GroundWire API.  A `.key`, `.crt`, and `.pem` file as well as a SSL passphrase are required and specified in `.env` environment variables file as:
+
+```sh
+SSL_PASSPHRASE=passowrd
+SSL_CRT=/ssl/filename.crt
+SSL_KEY=/ssl/filename.key
+SSL_PEM=/ssl/filename.pem
 ```
 
 # Environments
