@@ -18,6 +18,7 @@
     "lodash": "^4.17.4",
     "moment": "^2.18.1",
     "morgan": "~1.6.1",
+    "pm2": "^2.4.6",
     "query-string": "^4.3.4",
     "request": "^2.81.0",
     "serve-favicon": "~2.3.0",
