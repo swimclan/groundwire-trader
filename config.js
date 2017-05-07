@@ -36,9 +36,6 @@ let config = {
                     pass: process.env.PASSWORD
                 },
                 agentOptions: {
-                    cert: fs.readFileSync(path.resolve(__dirname + process.env.SSL_CRT)),
-                    key: fs.readFileSync(path.resolve(__dirname + process.env.SSL_KEY)),
-                    ca: fs.readFileSync(path.resolve(__dirname + process.env.SSL_PEM)),
                     passphrase: process.env.SSL_PASSPHRASE
                 }
             }
@@ -51,9 +48,6 @@ let config = {
                     pass: process.env.PASSWORD
                 },
                 agentOptions: {
-                    cert: fs.readFileSync(path.resolve(__dirname + process.env.SSL_CRT)),
-                    key: fs.readFileSync(path.resolve(__dirname + process.env.SSL_KEY)),
-                    ca: fs.readFileSync(path.resolve(__dirname + process.env.SSL_PEM)),
                     passphrase: process.env.SSL_PASSPHRASE
                 }
             }
