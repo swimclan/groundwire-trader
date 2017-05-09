@@ -1,5 +1,6 @@
 | Version              | Type      | Description                                                                                               |
 | -------------------- | --------- | --------------------------------------------------------------------------------------------------------- |
+| **v1.5.2**           | *Fix*     | Fixed it so that all sell orders are market sell orders and not stop sell to reduce rejection probability |
 | **v1.5.1**           | *Feature* | Supporting SSL certificate and making the path to the SSL files configurable                              |
 | **v1.5.0**           | *Feature* | Ability for the trading controller to execute sell order when stop loss value is hit by the best ask price |
 | **v1.4.1**           | *Fix*     | Fixed a bug where the simulator was not logging the correct mode on or off                                |

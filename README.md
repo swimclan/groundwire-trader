@@ -2,7 +2,7 @@
 This is the GroundWire trading application.  It is a server that is configured to execute trades according to various built-in strategies.  Once positions are generated, the server will monitor price action using the Intrinio&trade; Real-Time Exchange websocket stream and implement a trailing stop loss for each stock position that it is configured to manage. The trailing stop loss algorithm is configurable to be less or more agressive in terms of price tracking so as to be intelligent about how to lock in profit margin or minimize loss.
 
 # Version
-1.5.1
+1.5.2
 <br>
 <em>See</em> [`CHANGELOG.md`](./CHANGELOG.md) <em>for more detailed view of all versions</em>
 
@@ -11,7 +11,7 @@ This is the GroundWire trading application.  It is a server that is configured t
 | Route                          | HTTP Verb         | Request Body         | Description                                                           |
 | ------------------------------ | ----------------- | -------------------- | --------------------------------------------------------------------- |
 | `/position/create/:quantity`   | GET               | N/A                  | This route when requested will kick off the purchasing of all instruments that are in the user's watch list.  Only tradeable instruments will be bought.  Orders with untradeable insrtuments will simply not be filled. |
-| `/position/trade`              | POST              | (1) `exlusions <string>`: a comma seperated list of tickers to ignore<br>(2) `stopmargin <float>`: A decimal value representing the percentage of the initial stop loss margin of the strategy in use | This route will kick off the trading process for any stock positions currently in the market that are not in the exclusions list.  Once the best ask price is less than the current stop loss, it will execute a stop-loss sell into Robinhood at the last best ask price |
+| `/position/trade`              | POST              | (1) `exlusions <string>`: a comma seperated list of tickers to ignore<br>(2) `stopmargin <float>`: A decimal value representing the percentage of the initial stop loss margin of the strategy in use | This route will kick off the trading process for any stock positions currently in the market that are not in the exclusions list.  Once the best ask price is less than the current stop loss, it will execute a market sell into Robinhood at the last best ask price |
 
 # Security
 
@@ -33,13 +33,11 @@ API_KEY=ioqbewfvoihub
 
 ## SSL
 
-SSL Certificates are supported for being able to send secure requests to the GroundWire API.  A `.key`, `.crt`, and `.pem` file as well as a SSL passphrase are required and specified in `.env` environment variables file as:
+SSL Certificates are supported for being able to send secure requests to the GroundWire API.  A `.pem` file as well as a SSL passphrase are required and specified in `.env` environment variables file as:
 
 ```sh
 SSL_PASSPHRASE=passowrd
-SSL_CRT=/ssl/filename.crt
-SSL_KEY=/ssl/filename.key
-SSL_PEM=/ssl/filename.pem
+NODE_EXTRA_CA_CERTS=/ssl/certificate.pem
 ```
 
 # Environments

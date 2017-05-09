@@ -178,8 +178,7 @@ var sellPosition = function(instrument, price) {
         Trade.getInstance().create({
             symbol: instrument.symbol,
             quantity: instrument.quantity.toString(),
-            type: 'sell',
-            stop_price: price.toString()
+            type: 'sell'
         })
         .then((trade) => {
             resolve(trade);
