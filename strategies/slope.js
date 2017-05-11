@@ -1,7 +1,18 @@
-module.exports = function(lastPrice, currentPrice, lastStop, coefficient, minStopMargin) {
-    let priceSlope = currentPrice - lastPrice;
-    let stopSlope = coefficient * priceSlope;
-    let stopMarginCheck = (currentPrice - (stopSlope + lastStop)) / currentPrice;
+'use strict';
+var utils = require('../utils');
 
-    return (priceSlope > 0) && (stopMarginCheck > minStopMargin) ? stopSlope + lastStop : lastStop;
+module.exports = function(args) {
+    var ret = null;
+    if (utils.hasKey('lastPrice', args)
+     && utils.hasKey('currentPrice', args)
+     && utils.hasKey('lastStop', args)
+     && utils.hasKey('coefficient', args)
+     && utils.hasKey('minStopMargin', args)) {
+        let priceSlope = args.currentPrice - args.lastPrice;
+        let stopSlope = args.coefficient * priceSlope;
+        let stopMarginCheck = (args.currentPrice - (stopSlope + args.lastStop)) / args.currentPrice;
+
+        ret = (priceSlope > 0) && (stopMarginCheck > args.minStopMargin) ? stopSlope + args.lastStop : args.lastStop;
+    }
+    return ret;
 }

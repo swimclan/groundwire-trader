@@ -8,7 +8,8 @@ var Instrument = require('../models/instrument');
 var Trade = require('../models/trade');
 var async = require('async');
 var config = require('../config');
-var strategies = {slope: require('../strategies/slope')};
+var strategies = require('../strategies');
+var Strategy = require('../lib/Strategy');
 
 module.exports = function(req, res, next) {
     var exclusions = [];
@@ -18,8 +19,12 @@ module.exports = function(req, res, next) {
     if (!_.has(req.body, 'stopmargin')) {
         return utils.throwError("No stop margin was found! Please include a stop margin percentage...", res);
     }
+    if (!_.has(req.body, 'strategy')) {
+        return utils.throwError("No strategy was specified.  Please supply a valid strategy...", res);
+    }
     let stopMargin = parseFloat(req.body.stopmargin);
-    
+    let userStrategy = req.body.strategy;
+
     if (!stopMargin) return utils.throwError("Invalid stop margin provided", res);
 
     new Positions().fetch()
@@ -30,7 +35,7 @@ module.exports = function(req, res, next) {
         async.eachOfSeries(tradeables, (tradeable, i, callback) => {
             openStream(tradeable.symbol)
             .then((stream) => {
-                return trackPosition(stream, tradeable, stopMargin)
+                return trackPosition(stream, tradeable, stopMargin, userStrategy);
             }).catch((err) => { callback(err); })
             .then(() => {
                 callback();
@@ -78,7 +83,11 @@ var excludePositions = function(exclusions, positions) {
             .fetch()
             .then((inst) => {
                 if (!utils.inArray(inst.toJSON().symbol, exclusions)) {
-                    ret.push({symbol: inst.get('symbol'), quantity: parseInt(position.quantity)});
+                    ret.push({
+                        symbol: inst.get('symbol'),
+                        quantity: parseInt(position.quantity),
+                        cost: parseFloat(position.average_buy_price)
+                    });
                 }
                 callback();
             });
@@ -93,12 +102,12 @@ var excludePositions = function(exclusions, positions) {
     });
 }
 
-var trackPosition = function(priceStream, instrument, stopMargin) {
+var trackPosition = function(priceStream, instrument, stopMargin, strategy) {
     return new Promise((resolve, reject) => {
         // The container that will house all data about the state of the current tick of market data
         var tick = {};
 
-        var stopPrice, simulation_state;
+        var stopPrice, simulation_state, currentMargin, bestProfitMargin = -Infinity;
 
         switch (process.env.SIMULATE) {
             case '0':
@@ -115,9 +124,11 @@ var trackPosition = function(priceStream, instrument, stopMargin) {
             console.log('Ticker:', instrument.symbol);
             console.log('simulation mode:', simulation_state);
             console.log('initial stop margin:', stopMargin);
+            console.log('average cost:', instrument.cost);
             console.log('Max spread:', config.get('trading.spread.max'));
             console.log('Min spread:', config.get('trading.spread.min'));
             console.log('-------------------------------------');
+
             priceStream.on('frame', (frame) => {
                 tick.ticker = frame.ticker;
                 switch(frame.type) {
@@ -134,11 +145,27 @@ var trackPosition = function(priceStream, instrument, stopMargin) {
                     var maxdiff = config.get('trading.spread.max') * tick.ask;
                     var mindiff = config.get('trading.spread.min') * tick.ask;
                     if (((tick.ask - tick.bid) < maxdiff) && ((tick.ask - tick.bid) > mindiff) && (tick.ask - tick.bid > 0)) {
-                        // Initial stop price or calculated new stopPrice
-                        stopPrice = !stopPrice ?
-                        tick.ask / (1 + stopMargin) :
-                        stopPrice = tick.lastask ? strategies.slope(tick.lastask, tick.ask, stopPrice, config.get('trading.strategies.slope.c'), config.get('trading.strategies.minStopMargin')) : stopPrice;
-                        
+
+                        // calculate profit margin
+                        currentMargin = (tick.ask - instrument.cost) / instrument.cost;
+                        bestProfitMargin = currentMargin > bestProfitMargin ? currentMargin : bestProfitMargin;
+
+                        // Initial stop price or calculated new stopPrice from strategy execution
+                        if (!stopPrice) {
+                            stopPrice = tick.ask / (1 + stopMargin)
+                        } else if (!_.isUndefined(tick.lastask)) {
+                        stopPrice = new Strategy(strategy, strategies,
+                                {
+                                lastPrice: tick.lastask,
+                                currentPrice: tick.ask,
+                                lastStop: stopPrice,
+                                coefficient: config.get('trading.strategies.c'),
+                                minStopMargin: config.get('trading.strategies.minStopMargin'),
+                                cost: instrument.cost,
+                                bestProfitMargin: bestProfitMargin,
+                                initialStopMargin: stopMargin
+                                }).execute();
+                        }
                         tick.stop = utils.moneyify(stopPrice);
                         
                         if (tick.stop < tick.ask) {

@@ -10,4 +10,5 @@ Each strategy function will be in its own file.  For instance a function that ca
 
 | Strategy             | Description                                            | Graphic Example                                    |
 | -------------------- | ------------------------------------------------------ | -------------------------------------------------- |
-| Slope Model          | This strategy calculates the next stop loss price by directly correlating it the the slope in the price action between each tick | ![Slope Model](../static/images/slope_Model.png "Slope Model Example")
+| Slope Model          | This strategy calculates the next stop loss price by directly correlating it the the slope in the price action between each tick | ![Slope Model](../static/images/slope_Model.png "Slope Model Example") |
+| Profit Model         | This strategy keeps track of the best profit margin acheived during monitoring of the stock price and adjusts the stop loss margin accorging to that profit margin | ![Profit Model](../static/images/profit_Model.png "Profit Model Example") |

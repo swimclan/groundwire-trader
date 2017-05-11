@@ -1,5 +1,6 @@
 | Version              | Type      | Description                                                                                               |
 | -------------------- | --------- | --------------------------------------------------------------------------------------------------------- |
+| **v1.6.0**           | *Feature* | Provided the profit model stop loss strategy in the trading feature.  Ability to track overall profit and dictate stop loss margin based on it. [Read about the slope model](./strategies/README.md) |
 | **v1.5.2**           | *Fix*     | Fixed it so that all sell orders are market sell orders and not stop sell to reduce rejection probability |
 | **v1.5.1**           | *Feature* | Supporting SSL certificate and making the path to the SSL files configurable                              |
 | **v1.5.0**           | *Feature* | Ability for the trading controller to execute sell order when stop loss value is hit by the best ask price |

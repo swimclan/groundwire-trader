@@ -11,20 +11,11 @@ let config = {
     trading: {
         spread: {
             min: 0,
-            max: 0.025
-        },
-        sigma: {
-            min: 0,
-            max: 3
+            max: 0.03
         },
         strategies: {
-            minStopMargin: 0.0025,
-            slope: {
-                c: 1.1
-            },
-            profit: {
-                c: 1.0
-            }
+            minStopMargin: 0.001,
+            c: 1
         }
     },
     ajax: {
