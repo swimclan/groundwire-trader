@@ -24,8 +24,7 @@ module.exports = function(req, res, next) {
         positions.toJSON().forEach((position) => {
             positionList.push(utils.parseInstrumentIdFromUrl(position.instrument));
         });
-        //tradeWatchlist(res, positionList, shares);
-        res.json({ buying_power: buying_power });
+        tradeWatchlist(res, positionList, shares);
     }).catch((err) => { utils.throwError(err, res) });
 }
 
