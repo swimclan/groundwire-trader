@@ -11,12 +11,13 @@ var Accounts = require('../collections/accounts');
 var _ = require('lodash');
 
 module.exports = function(req, res, next) {
-    var shares = {}, buying_power;
+    var shares = utils.hasKey('shares', req.params) ? req.params.shares : {};
+    var buying_power;
 
     new Accounts().fetch()
     .then((accts) => {
         var account = _.find(accts.toJSON(), { account_number: process.env.ACCT_NO });
-        buying_power = account.margin_balances.overnight_buying_power
+        buying_power = account.margin_balances.overnight_buying_power;
         return new Positions().fetch();
     }).catch((err) => { utils.throwError(err, res) })
     .then((positions) => {
@@ -43,18 +44,10 @@ var tradeWatchlist = function(res, positions, shares) {
             .then((trade) => {
                 trades.push(trade.toJSON());
                 setTimeout(callback, config.get('timeouts.buy'));
-            })
-            .catch((err) => {
-                console.log(err);
-                callback(err);
-            });
+            }).catch((err) => { callback(err) });
         }, (error) => {
-            if (error) {
-                utils.throwError(error, res);
-            }
-            res.json(trades) 
+            if (error) return utils.throwError(error, res);
+            res.json(trades);
         });
-    }).catch((err) => {
-        utils.throwError(err, res);
-    });
+    }).catch((err) => { utils.throwError(err, res) });
 }
