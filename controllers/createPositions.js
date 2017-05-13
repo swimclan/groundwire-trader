@@ -7,21 +7,26 @@ var Queue = require('../collections/queue');
 var utils = require('../utils');
 var config = require('../config');
 var async = require('async');
+var Accounts = require('../collections/accounts');
+var _ = require('lodash');
 
 module.exports = function(req, res, next) {
-    let shares = parseInt(req.params.shares);
+    var shares = {}, buying_power;
 
-    new Positions().fetch()
+    new Accounts().fetch()
+    .then((accts) => {
+        var account = _.find(accts.toJSON(), { account_number: process.env.ACCT_NO });
+        buying_power = account.margin_balances.overnight_buying_power
+        return new Positions().fetch();
+    }).catch((err) => { utils.throwError(err, res) })
     .then((positions) => {
         let positionList = [];
         positions.toJSON().forEach((position) => {
             positionList.push(utils.parseInstrumentIdFromUrl(position.instrument));
-        })
-        tradeWatchlist(res, positionList, shares);
-    })
-    .catch((err) => {
-        utils.throwError(err, res);
-    });
+        });
+        //tradeWatchlist(res, positionList, shares);
+        res.json({ buying_power: buying_power });
+    }).catch((err) => { utils.throwError(err, res) });
 }
 
 var tradeWatchlist = function(res, positions, shares) {

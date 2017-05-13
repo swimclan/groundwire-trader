@@ -131,6 +131,18 @@ let config = {
                 key: "key"
             }
         }
+    },
+    accounts: {
+        api: {
+            url: {
+                production: "https://api.groundwire.co/v1/accounts",
+                development: "http://localhost:3000/v1/accounts",
+            },
+            secure: {
+                required: true,
+                key: "key"
+            }
+        }
     }
 }
 
