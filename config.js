@@ -5,8 +5,7 @@ var path = require('path');
 
 let config = {
     timeouts: {
-        buy: 3000,
-        sell: 0
+        trade: 200
     },
     trading: {
         spread: {

@@ -46,3 +46,14 @@ module.exports.nullPromise = function() {
 module.exports.moneyify = function(n) {
   return (Math.floor(n*100)/100);
 }
+
+module.exports.findMin = function(collection, key) {
+    var min = Infinity, min_index;
+    collection.forEach((item, i) => {
+        if (parseInt(item[key]) < min) {
+            min = parseInt(item[key]);
+            min_index = i;
+        }
+    });
+    return collection[min_index];
+}
