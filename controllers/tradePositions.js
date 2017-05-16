@@ -10,6 +10,7 @@ var async = require('async');
 var config = require('../config');
 var strategies = require('../strategies');
 var Strategy = require('../lib/Strategy');
+var Logger = require('../Logger');
 
 module.exports = function(req, res, next) {
     var exclusions = [];
@@ -33,9 +34,12 @@ module.exports = function(req, res, next) {
     }).catch((err) => { utils.throwError(err, res) })
     .then((tradeables) => {
         async.eachOfSeries(tradeables, (tradeable, i, callback) => {
-            openStream(tradeable.symbol)
-            .then((stream) => {
-                return trackPosition(stream, tradeable, stopMargin, userStrategy);
+            Promise.all([
+                openStream(tradeable.symbol),
+                new Logger().authorize().create(utils.logFileName(tradeable.symbol))
+            ])
+            .then(([stream, logger]) => {
+                return trackPosition(stream, tradeable, stopMargin, userStrategy, logger)
             }).catch((err) => { callback(err); })
             .then(() => {
                 callback();
@@ -102,10 +106,10 @@ var excludePositions = function(exclusions, positions) {
     });
 }
 
-var trackPosition = function(priceStream, instrument, stopMargin, strategy) {
+var trackPosition = function(priceStream, instrument, stopMargin, strategy, logger) {
     return new Promise((resolve, reject) => {
         // The container that will house all data about the state of the current tick of market data
-        var tick = {};
+        var tick = {}, ticks = [];;
 
         var stopPrice, simulation_state, currentMargin, bestProfitMargin = -Infinity;
 
@@ -145,7 +149,7 @@ var trackPosition = function(priceStream, instrument, stopMargin, strategy) {
                     var maxdiff = config.get('trading.spread.max') * tick.ask;
                     var mindiff = config.get('trading.spread.min') * tick.ask;
                     if (((tick.ask - tick.bid) < maxdiff) && ((tick.ask - tick.bid) > mindiff) && (tick.ask - tick.bid > 0)) {
-
+                        ticks.push(_.assign({}, tick));
                         // calculate profit margin
                         currentMargin = (tick.ask - instrument.cost) / instrument.cost;
                         bestProfitMargin = currentMargin > bestProfitMargin ? currentMargin : bestProfitMargin;
@@ -185,6 +189,9 @@ var trackPosition = function(priceStream, instrument, stopMargin, strategy) {
                                 console.log('Trade confirmation ===>');
                                 console.log(confirm.toJSON());
                                 console.log('---------------------------------------------');
+                        
+                                logger.update(['bid', 'ask', 'stop', 'last'], ticks);
+
                             }).catch((err) => { return null });
                         }
                     }

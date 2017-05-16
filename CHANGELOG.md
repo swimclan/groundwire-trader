@@ -1,5 +1,6 @@
 | Version              | Type      | Description                                                                                               |
 | -------------------- | --------- | --------------------------------------------------------------------------------------------------------- |
+| **v1.7.1**           | *Feature* | Added a data logger that integrates with Google drive to analyze the strategies                           |
 | **v1.7.0**           | *Feature* | Added ability to have app automatically determine how many shares of each stock to buy in watch list based on buying power in specified account |
 | **v1.6.1**           | *Feature* | Support child models in the model class to have "sub objects" in the data from the API                    |
 | **v1.6.0**           | *Feature* | Provided the profit model stop loss strategy in the trading feature.  Ability to track overall profit and dictate stop loss margin based on it. [Read about the slope model](./strategies/README.md) |

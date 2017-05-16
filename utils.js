@@ -1,5 +1,7 @@
 'use strict';
 
+var moment = require('moment');
+
 module.exports.parseObjectPath = function(path, obj) {
     let params = path.split('.');
     var value = obj;
@@ -56,4 +58,8 @@ module.exports.findMin = function(collection, key) {
         }
     });
     return collection[min_index];
+}
+
+module.exports.logFileName = function(ticker) {
+    return `${Date.now().toString()}_${ticker}_${moment(Date.now()).format('YYYYMMDD')}`;
 }

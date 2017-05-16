@@ -7,6 +7,10 @@ let config = {
     timeouts: {
         trade: 200
     },
+    google: {
+        oauth_token: JSON.parse(process.env.GOOGLE_OAUTH_TOKEN),
+        oauth_client: JSON.parse(process.env.GOOGLE_OAUTH_CLIENT)
+    },
     trading: {
         spread: {
             min: 0,
