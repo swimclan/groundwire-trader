@@ -12,4 +12,5 @@ RUN npm install
 COPY . /tradingapp
 
 #run the application in the image
+EXPOSE 3001
 CMD ["node", "bin/www"]
