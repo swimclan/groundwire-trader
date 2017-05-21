@@ -1,0 +1,3 @@
+deploy:
+  script:
+    - /opt/groundwire/build.sh
