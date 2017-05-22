@@ -36,7 +36,7 @@ module.exports = function(req, res, next) {
         async.eachOfSeries(tradeables, (tradeable, i, callback) => {
             Promise.all([
                 openStream(tradeable.symbol),
-                new Logger().authorize().create(utils.logFileName(tradeable.symbol))
+                new Logger().authorize().create(utils.logFileName(tradeable.symbol, userStrategy))
             ])
             .then(([stream, logger]) => {
                 return trackPosition(stream, tradeable, stopMargin, userStrategy, logger)

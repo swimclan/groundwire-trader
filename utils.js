@@ -60,6 +60,6 @@ module.exports.findMin = function(collection, key) {
     return collection[min_index];
 }
 
-module.exports.logFileName = function(ticker) {
-    return `${Date.now().toString()}_${ticker}_${moment(Date.now()).format('YYYYMMDD')}`;
+module.exports.logFileName = function(ticker, strategy) {
+    return `${Date.now().toString()}_${ticker}_${moment(Date.now()).format('YYYYMMDD')}_${strategy}`;
 }
