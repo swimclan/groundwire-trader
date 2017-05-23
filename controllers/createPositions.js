@@ -78,6 +78,7 @@ var allocateBalance = function(res, watchlist, positions, balance, shares=null) 
         },
         (error) => {
             if (error) return reject(error);
+            if (portfolio.length < 1) return resolve([]);
             var minPrice = utils.findMin(portfolio, 'price').price;
             //while (balance_left > minPrice) {
             while ((balance_left > minPrice) && !shares) {

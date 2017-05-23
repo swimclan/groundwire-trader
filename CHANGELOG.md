@@ -1,5 +1,6 @@
 | Version              | Type      | Description                                                                                               |
 | -------------------- | --------- | --------------------------------------------------------------------------------------------------------- |
+| **v1.8.2**           | *Fix*     | Fixed bug where error happened on position create when watchlist was empty                                |
 | **v1.8.1**           | *Feature* | Put strategy label on file name of Google Sheet log file                                                  |
 | **v1.8.0**           | *Feature* | Added GitLab Continuous Integration with Docker containers                                                |
 | **v1.7.1**           | *Feature* | Added a data logger that integrates with Google drive to analyze the strategies                           |
