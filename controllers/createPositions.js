@@ -68,9 +68,9 @@ var allocateBalance = function(res, watchlist, positions, balance, shares=null) 
                 return Price.getInstance({ symbol: stock.get('symbol') }).fetch()
             }).catch((err) => { callback(err) })
             .then((price) => {
-                portfolio.push({ 
+                portfolio.push({
                     instrument: inst,
-                    price: price.get('last_trade_price'),
+                    price: parseInt(price.get('last_trade_price')),
                     shares: shares ? parseInt(shares) : 0 
                 });
                 callback();
@@ -80,7 +80,6 @@ var allocateBalance = function(res, watchlist, positions, balance, shares=null) 
             if (error) return reject(error);
             if (portfolio.length < 1) return resolve([]);
             var minPrice = utils.findMin(portfolio, 'price').price;
-            //while (balance_left > minPrice) {
             while ((balance_left > minPrice) && !shares) {
                 portfolio.forEach((item, i) => {
                     if (balance_left > item.price) {
