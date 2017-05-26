@@ -111,7 +111,7 @@ var trackPosition = function(priceStream, instrument, stopMargin, strategy, logg
         // The container that will house all data about the state of the current tick of market data
         var tick = {}, ticks = [];;
 
-        var stopPrice, simulation_state, currentMargin, bestProfitMargin = -Infinity;
+        var stopPrice, simulation_state, currentMargin, bestProfitMargin = -Infinity, bestAsk = 0, newHigh;
 
         switch (process.env.SIMULATE) {
             case '0':
@@ -154,6 +154,9 @@ var trackPosition = function(priceStream, instrument, stopMargin, strategy, logg
                         currentMargin = (tick.ask - instrument.cost) / instrument.cost;
                         bestProfitMargin = currentMargin > bestProfitMargin ? currentMargin : bestProfitMargin;
 
+                        // Calculate best ask
+                        newHigh = tick.ask > bestAsk;
+                        bestAsk = newHigh ? tick.ask : bestAsk;
                         // Initial stop price or calculated new stopPrice from strategy execution
                         if (!stopPrice) {
                             stopPrice = tick.ask / (1 + stopMargin)
@@ -167,7 +170,8 @@ var trackPosition = function(priceStream, instrument, stopMargin, strategy, logg
                                 minStopMargin: config.get('trading.strategies.minStopMargin'),
                                 cost: instrument.cost,
                                 bestProfitMargin: bestProfitMargin,
-                                initialStopMargin: stopMargin
+                                initialStopMargin: stopMargin,
+                                newHigh: newHigh
                                 }).execute();
                         }
                         tick.stop = utils.moneyify(stopPrice);
