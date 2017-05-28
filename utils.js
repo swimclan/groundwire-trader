@@ -36,8 +36,8 @@ module.exports.parseInstrumentIdFromUrl = function(url) {
 }
 
 module.exports.throwError = function(error, res) {
-    console.log(error);
-    res.status(400);
+    console.log("throwing error: " + error);
+    res.status(500);
     return res.json({error: error});
 }
 
@@ -62,4 +62,33 @@ module.exports.findMin = function(collection, key) {
 
 module.exports.logFileName = function(ticker, strategy) {
     return `${Date.now().toString()}_${ticker}_${moment(Date.now()).format('YYYYMMDD')}_${strategy}`;
+}
+
+module.exports.today = function() {
+    return moment().day();
+}
+
+module.exports.lastWeekday = function() {
+  var current = moment();
+  while (true) {
+    current = current.subtract(1, 'day');
+    if ((current.day() >= 1) && (current.day() <= 5)) break;
+  }
+  return current.day();
+}
+
+module.exports.tzOffset = function() {
+    var today = moment();
+    return moment.parseZone(today).utcOffset();
+}
+
+module.exports.isMarketClosed = function(holidays) {
+    let today = moment();
+    var i = 0;
+    let _holidays = holidays.toJSON();
+    while(i < _holidays.length) {
+        if (today.dayOfYear() === moment(_holidays[i].date).utcOffset(-this.tzOffset()).dayOfYear()) return _holidays[i].holiday;
+        i++;
+    }
+    return false;
 }

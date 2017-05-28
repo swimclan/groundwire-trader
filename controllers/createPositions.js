@@ -9,25 +9,51 @@ var utils = require('../utils');
 var config = require('../config');
 var async = require('async');
 var Accounts = require('../collections/accounts');
+var Holidays = require('../collections/holidays');
 var _ = require('lodash');
 
 module.exports = function(req, res, next) {
     var shares = utils.hasKey('shares', req.params) ? req.params.shares : null;
-    var buying_power;
+    var buying_power, connection_state=true, connection_message;
 
-    new Accounts().fetch()
+    new Holidays().fetch()
+    .then((holidays) => {
+        if (!utils.isMarketClosed(holidays)) return new Accounts().fetch();
+        console.log(`Market is closed for ${utils.isMarketClosed(holidays)}`);
+        connection_message = `Market is closed for ${utils.isMarketClosed(holidays)}`;
+        connection_state = false;
+        return null;
+    })
+    .catch((err) => {
+        connection_message = "Position create aborted.  Market holiday calendar could not be fetched.";
+        connection_state = false;
+        console.log(err);
+        return null;
+    })
     .then((accts) => {
-        var account = _.find(accts.toJSON(), { account_number: process.env.ACCT_NO });
-        buying_power = account.margin_balances.overnight_buying_power;
+        var account = _.find(accts ? accts.toJSON() : [], { account_number: process.env.ACCT_NO });
+        buying_power = account ? account.margin_balances.overnight_buying_power : null;
         return new Positions().fetch();
-    }).catch((err) => { utils.throwError(err, res) })
+    }).catch((err) => {
+        connection_message = "Position create aborted.  RH account balance could not be fetched.";
+        connection_state = false;
+        console.log(err);
+        return new Positions().fetch();
+    })
     .then((positions) => {
         let positionList = [];
         positions.toJSON().forEach((position) => {
             positionList.push(utils.parseInstrumentIdFromUrl(position.instrument));
         });
-        tradeWatchlist(res, positionList, shares, buying_power);
-    }).catch((err) => { utils.throwError(err, res) });
+        if (connection_state) {
+            tradeWatchlist(res, positionList, shares, buying_power);
+        } else {
+            res.status(500);
+            res.json({message: connection_message});
+        }
+    }).catch((err) => {
+        utils.throwError(err, res)
+    });
 }
 
 var tradeWatchlist = function(res, positions, shares, balance) {

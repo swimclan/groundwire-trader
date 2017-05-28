@@ -51,7 +51,7 @@ let config = {
         api: {
             url: {
                 production: "https://api.groundwire.co/v1/positions",
-                development: "http://localhost:3000/v1/positions",
+                development: "http://localhost:3000/v1/positions"
             },
             secure: {
                 required: true,
@@ -78,7 +78,7 @@ let config = {
         api: {
             url: {
                 production: "https://api.groundwire.co/v1/watchlist",
-                development: "http://localhost:3000/v1/watchlist",
+                development: "http://localhost:3000/v1/watchlist"
             },
             secure: {
                 required: true,
@@ -90,7 +90,7 @@ let config = {
         api: {
             url: {
                 production: "https://api.groundwire.co/v1/price",
-                development: "http://localhost:3000/v1/price",
+                development: "http://localhost:3000/v1/price"
             },
             secure: {
                 required: true,
@@ -100,7 +100,7 @@ let config = {
         socket: {
             url: {
                 production: "https://api.groundwire.co",
-                development: "http://localhost:3000",
+                development: "http://localhost:3000"
             },
             secure: {
                 required: true,
@@ -115,7 +115,7 @@ let config = {
         api: {
             url: {
                 production: "https://api.groundwire.co/v1/trade",
-                development: "http://localhost:3000/v1/trade",
+                development: "http://localhost:3000/v1/trade"
             },
             secure: {
                 required: true,
@@ -127,7 +127,7 @@ let config = {
         api: {
             url: {
                 production: "https://api.groundwire.co/v1/queue",
-                development: "http://localhost:3000/v1/queue",
+                development: "http://localhost:3000/v1/queue"
             },
             secure: {
                 required: true,
@@ -139,7 +139,19 @@ let config = {
         api: {
             url: {
                 production: "https://api.groundwire.co/v1/accounts",
-                development: "http://localhost:3000/v1/accounts",
+                development: "http://localhost:3000/v1/accounts"
+            },
+            secure: {
+                required: true,
+                key: "key"
+            }
+        }
+    },
+    holidays: {
+        api: {
+            url: {
+                production: "https://api.groundwire.co/v1/holidays",
+                development: "http://localhost:3000/v1/holidays"
             },
             secure: {
                 required: true,

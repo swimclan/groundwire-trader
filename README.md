@@ -2,7 +2,7 @@
 This is the GroundWire trading application.  It is a server that is configured to execute trades according to various built-in strategies.  Once positions are generated, the server will monitor price action using the Intrinio&trade; Real-Time Exchange websocket stream and implement a trailing stop loss for each stock position that it is configured to manage. The trailing stop loss algorithm is configurable to be less or more agressive in terms of price tracking so as to be intelligent about how to lock in profit margin or minimize loss.
 
 # Version
-1.9.0
+1.9.1
 <br>
 <em>See</em> [`CHANGELOG.md`](./CHANGELOG.md) <em>for more detailed view of all versions</em>
 
@@ -26,6 +26,10 @@ Example:
 GOOGLE_OAUTH_CLIENT='{"installed":{"client_id":"468730889874-nrgbmkn6lethohnc7fjbnqctfh2bgdgm.apps.googleusercontent.com","project_id":"flowing-encoder-167801","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://accounts.google.com/o/oauth2/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"upqv7hljH9OFB6DE5rIfXecz","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}'
 GOOGLE_OAUTH_TOKEN='{"access_token":"ya29.GltMBE6UIbWfCIQ7NGO3TD6nX8-n9N6crQc7d6crFyVKeoMTbPDr5OJU0hUZ9ttqU9aYwCdK0L3rrA8CRCGIK6jakgkJXrSFePuUo3T_ykM3kVeUZj330t6luelZ","refresh_token":"1/Q5swwl9D0xc2CPbptWeainSQm6a4JJ1oHwsD43unhwLle5gzBWPGPB9oI81uWLa_","token_type":"Bearer","expiry_date":2851901131000}'
 ```
+
+# Holidays
+
+The trading app will observe all posted market holidays and will not attempt to buy or sell during those days.  Holiday calendar is provided by [tradingeconomics.com](https://tradingeconomics.com).
 
 # Security
 

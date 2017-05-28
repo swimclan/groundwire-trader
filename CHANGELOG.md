@@ -1,5 +1,6 @@
 | Version              | Type      | Description                                                                                               |
 | -------------------- | --------- | --------------------------------------------------------------------------------------------------------- |
+| **v1.9.1**           | *Feature* | Support holiday calendar to prevent buying and selling on posted market holidays                          |
 | **v1.9.0**           | *Feature* | Supported the best price stop loss strategy. [Read about the best price model](./strategies/README.md)    |
 | **v1.8.2**           | *Fix*     | Fixed bug where error happened on position create when watchlist was empty                                |
 | **v1.8.1**           | *Feature* | Put strategy label on file name of Google Sheet log file                                                  |

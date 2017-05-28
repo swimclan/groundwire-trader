@@ -11,9 +11,10 @@ var config = require('../config');
 var strategies = require('../strategies');
 var Strategy = require('../lib/Strategy');
 var Logger = require('../Logger');
+var Holidays = require('../collections/holidays');
 
 module.exports = function(req, res, next) {
-    var exclusions = [];
+    var exclusions = [], connection_state = true, connection_message = "Stream connection established";
     if (_.has(req.body, 'exclusions')) {
         exclusions = exclusions.concat(utils.splitStringList(req.body.exclusions));
     }
@@ -28,10 +29,28 @@ module.exports = function(req, res, next) {
 
     if (!stopMargin) return utils.throwError("Invalid stop margin provided", res);
 
-    new Positions().fetch()
+    new Holidays().fetch()
+    .then((holidays) => {
+        if (!utils.isMarketClosed(holidays)) return new Positions().fetch();
+        console.log(`Market is closed for ${utils.isMarketClosed(holidays)}`);
+        connection_message = `Connection aborted.  Market is closed for ${utils.isMarketClosed(holidays)}`;
+        connection_state = false;
+        return null;
+    })
+    .catch((err) => {
+        console.log(err);
+        connection_message = "Connection aborted. Unable to fetch market holiday calendar";
+        return null;
+    })
     .then((positions) => {
-        return excludePositions(exclusions, positions.toJSON());
-    }).catch((err) => { utils.throwError(err, res) })
+        return excludePositions(exclusions, positions ? positions.toJSON() : []);
+    })
+    .catch((err) => {
+        console.log(err);
+        connection_state = false;
+        connection_message = "Connection aborted.  Unable to fetch positions.";
+        return [];
+    })
     .then((tradeables) => {
         async.eachOfSeries(tradeables, (tradeable, i, callback) => {
             Promise.all([
@@ -46,10 +65,18 @@ module.exports = function(req, res, next) {
             }).catch((err) => { callback(err); });
         },
         (err) => {
-            if (err) utils.throwError(err, res);
-            res.json({message: "Connected to the GroundWire Price Stream"});
+            if (err) {
+                console.log(err);
+                connection_state = false;
+            }
+            res.status(connection_state ? 200 : 500);
+            res.json({message: connection_message});
         });
-    }).catch((err) => { utils.throwError(err, res) })
+    })
+    .catch((err) => {
+        console.log(err);
+        utils.throwError('Connection routine failed', res);
+    });
 }
 
 var openStream = function(ticker) {
