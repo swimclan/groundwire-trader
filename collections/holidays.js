@@ -1,7 +1,7 @@
 'use strict';
 
 let Collection = require('../lib/Collection');
-let Holiday = require('../models/Holiday');
+let Holiday = require('../models/holiday');
 let config = require('../config');
 
 class Holidays extends Collection {
