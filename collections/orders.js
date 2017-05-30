@@ -1,5 +1,5 @@
 'use strict';
-var Collection = require('../lib/collection');
+var Collection = require('../lib/Collection');
 var Order = require('../models/order');
 var _has = require('lodash').has;
 var queryString = require('query-string');
