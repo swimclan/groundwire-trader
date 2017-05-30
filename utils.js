@@ -68,18 +68,22 @@ module.exports.today = function() {
     return moment().day();
 }
 
+module.exports.tzOffset = function() {
+    var today = moment();
+    return moment.parseZone(today).utcOffset();
+}
+
 module.exports.lastWeekday = function() {
   var current = moment();
   while (true) {
     current = current.subtract(1, 'day');
     if ((current.day() >= 1) && (current.day() <= 5)) break;
   }
-  return current.day();
+  return current;
 }
 
-module.exports.tzOffset = function() {
-    var today = moment();
-    return moment.parseZone(today).utcOffset();
+module.exports.positionCreatedLastWeekday = function(create_date) {
+    return this.lastWeekday().dayOfYear() === moment(create_date).dayOfYear();
 }
 
 module.exports.isMarketClosed = function(holidays) {

@@ -2,7 +2,7 @@
 This is the GroundWire trading application.  It is a server that is configured to execute trades according to various built-in strategies.  Once positions are generated, the server will monitor price action using the Intrinio&trade; Real-Time Exchange websocket stream and implement a trailing stop loss for each stock position that it is configured to manage. The trailing stop loss algorithm is configurable to be less or more agressive in terms of price tracking so as to be intelligent about how to lock in profit margin or minimize loss.
 
 # Version
-1.9.2
+1.9.3
 <br>
 <em>See</em> [`CHANGELOG.md`](./CHANGELOG.md) <em>for more detailed view of all versions</em>
 
@@ -30,6 +30,10 @@ GOOGLE_OAUTH_TOKEN='{"access_token":"ya29.GltMBE6UIbWfCIQ7NGO3TD6nX8-n9N6crQc7d6
 # Holidays
 
 The trading app will observe all posted market holidays and will not attempt to buy or sell during those days.  Holiday calendar is provided by [tradingeconomics.com](https://tradingeconomics.com).
+
+# Interday swing trading
+
+The trading app is aware of when positions were aqcuired in the market and will allow positions to be tracked over the course of multiple days.  Logic has been introduced to prevent the app from re-tracking a position that is already under monitor just because the position remained live beyond the first day.
 
 # Security
 

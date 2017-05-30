@@ -53,6 +53,10 @@ module.exports = function(req, res, next) {
         return [];
     })
     .then((tradeables) => {
+        if (tradeables.length < 1) {
+            connection_state = false;
+            connection_message = "Connection aborted.  No new tradeable positions found";
+        }
         async.eachOfSeries(tradeables, (tradeable, i, callback) => {
             Promise.all([
                 openStream(tradeable.symbol),
@@ -70,7 +74,7 @@ module.exports = function(req, res, next) {
                 console.log(err);
                 connection_state = false;
             }
-            res.status(connection_state ? 200 : 500);
+            res.status(connection_state ? 200 : 202);
             res.json({message: connection_message});
         });
     })
@@ -111,10 +115,12 @@ var excludePositions = function(exclusions, positions) {
     var ret = [];
     return new Promise((resolve, reject) => {
         async.eachSeries(positions, (position, callback) => {
-            Instrument.getInstance({instrument: utils.parseInstrumentIdFromUrl(position.instrument)})
-            .fetch()
+            recentPosition(position)
+            .then((pos) => {
+                if (pos) return Instrument.getInstance({instrument: utils.parseInstrumentIdFromUrl(pos.instrument)}).fetch();
+            }).catch((err) => { callback(err) })
             .then((inst) => {
-                if (!utils.inArray(inst.toJSON().symbol, exclusions)) {
+                if (!_.isUndefined(inst) && !utils.inArray(inst.toJSON().symbol, exclusions)) {
                     ret.push({
                         symbol: inst.get('symbol'),
                         quantity: parseInt(position.quantity),
@@ -122,7 +128,7 @@ var excludePositions = function(exclusions, positions) {
                     });
                 }
                 callback();
-            });
+            }).catch((err) => { callback(err); });
         },
         (err) => {
             if (err) {
@@ -131,6 +137,25 @@ var excludePositions = function(exclusions, positions) {
             }
             resolve(ret);
         });
+    });
+}
+
+var recentPosition = function(position) {
+    return new Promise((resolve, reject) => {
+        new Orders({instrument: utils.parseInstrumentIdFromUrl(position.instrument)}).fetch()
+        .then((orders) => {
+            let _orders = orders.toJSON();
+            let found = false;
+            for (var i in _orders) {
+                if (utils.positionCreatedLastWeekday(_orders[i].created_at)) {
+                    console.log("Position was created in the last trading day!");
+                    found = true;
+                    break;
+                }
+            };
+            if (found) resolve(position);
+            if (!found) resolve(null);
+        }).catch((err) => { reject(err) });
     });
 }
 
