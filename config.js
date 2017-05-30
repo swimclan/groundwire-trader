@@ -158,6 +158,18 @@ let config = {
                 key: "key"
             }
         }
+    },
+    orders: {
+        api: {
+            url: {
+                production: "https://api.groundwire.co/v1/orders",
+                development: "http://localhost:3000/v1/orders"
+            },
+            secure: {
+                required: true,
+                key: "key"
+            }
+        }
     }
 }
 

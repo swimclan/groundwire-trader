@@ -2,7 +2,7 @@
 This is the GroundWire trading application.  It is a server that is configured to execute trades according to various built-in strategies.  Once positions are generated, the server will monitor price action using the Intrinio&trade; Real-Time Exchange websocket stream and implement a trailing stop loss for each stock position that it is configured to manage. The trailing stop loss algorithm is configurable to be less or more agressive in terms of price tracking so as to be intelligent about how to lock in profit margin or minimize loss.
 
 # Version
-1.9.1
+1.9.2
 <br>
 <em>See</em> [`CHANGELOG.md`](./CHANGELOG.md) <em>for more detailed view of all versions</em>
 

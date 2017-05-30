@@ -12,6 +12,7 @@ var strategies = require('../strategies');
 var Strategy = require('../lib/Strategy');
 var Logger = require('../Logger');
 var Holidays = require('../collections/holidays');
+var Orders = require('../collections/orders');
 
 module.exports = function(req, res, next) {
     var exclusions = [], connection_state = true, connection_message = "Stream connection established";
