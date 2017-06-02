@@ -36,7 +36,6 @@ module.exports.parseInstrumentIdFromUrl = function(url) {
 }
 
 module.exports.throwError = function(error, res) {
-    console.log("throwing error: " + error);
     res.status(500);
     return res.json({error: error});
 }
@@ -95,4 +94,14 @@ module.exports.isMarketClosed = function(holidays) {
         i++;
     }
     return false;
+}
+
+module.exports.spreadTitle = function(title) {
+    var titlearr = title.toUpperCase().split('');
+    for (var i=0; i<titlearr.length; i++) {
+      if (i % 2 !== 0) {
+        titlearr.splice(i, 0, ' ');
+      }
+    }
+    return titlearr.join('');
 }

@@ -1,3 +1,3 @@
-var Drive = require('./Drive');
+var Logger = require('./logger');
 
-module.exports = Drive;
+module.exports = Logger;

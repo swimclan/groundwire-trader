@@ -10,60 +10,78 @@ var async = require('async');
 var config = require('../config');
 var strategies = require('../strategies');
 var Strategy = require('../lib/Strategy');
-var Logger = require('../Logger');
+var Analytics = require('../Analytics');
 var Holidays = require('../collections/holidays');
 var Orders = require('../collections/orders');
+var Logger = require('../Logger');
+
+let logger = new Logger(config.get('log.level'), config.get('log.file'));
+
+let options = {};
 
 module.exports = function(req, res, next) {
-    var exclusions = [], connection_state = true, connection_message = "Stream connection established";
+    logger.log('info', 'initiating', 'initializing positions trade routine');
+    options.exclusions = [];
+    options.connection_state = true;
+    options.connection_message = "Stream connection established";
+
     if (_.has(req.body, 'exclusions')) {
-        exclusions = exclusions.concat(utils.splitStringList(req.body.exclusions));
+        options.exclusions = options.exclusions.concat(utils.splitStringList(req.body.exclusions));
     }
+    
     if (!_.has(req.body, 'stopmargin')) {
+        logger.log('error', 'missing request property', 'No stop margin was found in request.');
         return utils.throwError("No stop margin was found! Please include a stop margin percentage...", res);
     }
     if (!_.has(req.body, 'strategy')) {
+        logger.log('error', 'missing request property', 'No strategy was specified in request.');
         return utils.throwError("No strategy was specified.  Please supply a valid strategy...", res);
     }
-    let stopMargin = parseFloat(req.body.stopmargin);
-    let userStrategy = req.body.strategy;
+    options.stopMargin = parseFloat(req.body.stopmargin);
+    options.userStrategy = req.body.strategy;
 
-    if (!stopMargin) return utils.throwError("Invalid stop margin provided", res);
+    options.restrict = _.has(req.body, 'restrict') ? (req.body.restrict === 'true') || (req.body.restrict === '1') : false;
+
+    if (!options.stopMargin) {
+        logger.log('error', 'data format error', 'Invalid stop margin provided.');
+        return utils.throwError("Invalid stop margin provided", res);
+    }
 
     new Holidays().fetch()
     .then((holidays) => {
         if (!utils.isMarketClosed(holidays)) return new Positions().fetch();
-        console.log(`Market is closed for ${utils.isMarketClosed(holidays)}`);
-        connection_message = `Connection aborted.  Market is closed for ${utils.isMarketClosed(holidays)}`;
-        connection_state = false;
+        logger.log('error', 'market closed error', `Market is closed for ${utils.isMarketClosed(holidays)}`);
+        options.connection_message = `Connection aborted.  Market is closed for ${utils.isMarketClosed(holidays)}`;
+        options.connection_state = false;
         return null;
     })
     .catch((err) => {
-        console.log(err);
-        connection_message = "Connection aborted. Unable to fetch market holiday calendar";
+        logger.log('error', 'market calendar fetch error', err);
+        options.connection_message = "Connection aborted. Unable to fetch market holiday calendar";
         return null;
     })
     .then((positions) => {
-        return excludePositions(exclusions, positions ? positions.toJSON() : []);
+        return excludePositions(positions ? positions.toJSON() : []);
     })
     .catch((err) => {
-        console.log(err);
-        connection_state = false;
-        connection_message = "Connection aborted.  Unable to fetch positions.";
+        logger.log('error', 'positions fetch error', err);
+        options.connection_state = false;
+        options.connection_message = "Connection aborted.  Unable to fetch positions.";
         return [];
     })
     .then((tradeables) => {
         if (tradeables.length < 1) {
-            connection_state = false;
-            connection_message = "Connection aborted.  No new tradeable positions found";
+            options.connection_state = false;
+            options.connection_message = "Connection aborted.  No new tradeable positions found";
+            logger.log('debug', 'tradeables check', "Connection aborted.  No new tradeable positions found");
         }
         async.eachOfSeries(tradeables, (tradeable, i, callback) => {
             Promise.all([
                 openStream(tradeable.symbol),
-                new Logger().authorize().create(utils.logFileName(tradeable.symbol, userStrategy))
+                new Analytics().authorize().create(utils.logFileName(tradeable.symbol, options.userStrategy))
             ])
-            .then(([stream, logger]) => {
-                return trackPosition(stream, tradeable, stopMargin, userStrategy, logger)
+            .then(([stream, analytics]) => {
+                return trackPosition(stream, tradeable, analytics)
             }).catch((err) => { callback(err); })
             .then(() => {
                 callback();
@@ -71,32 +89,31 @@ module.exports = function(req, res, next) {
         },
         (err) => {
             if (err) {
-                console.log(err);
-                connection_state = false;
+                logger.log('error', 'track position error', err);
+                options.connection_state = false;
             }
-            res.status(connection_state ? 200 : 202);
-            res.json({message: connection_message});
+            res.status(options.connection_state ? 200 : 202);
+            res.json({message: options.connection_message});
         });
     })
     .catch((err) => {
-        console.log(err);
         utils.throwError('Connection routine failed', res);
     });
 }
 
 var openStream = function(ticker) {
+    logger.log('info', 'open stream', 'opening stream');
     return new Promise((resolve, reject) => {
         let connect_handler = () => {
-            console.log('Connected to the GroundWire price socket!');
+            logger.log('info', 'stream connect', 'Connected to the GroundWire price socket');
         };
 
         let close_handler = (reason) => {
-            console.log('Disconnected from the GroundWire price socket...  Goodbye!');
-            console.log(reason);
+            logger.log('info', 'stream disconnect', reason);
         };
 
         let error_handler = (err) => {
-            console.log('There was an error connecting to the GroundWire price socket');
+            logger.log('error', 'stream connect error', err);
             reject(err);
         };
 
@@ -111,16 +128,18 @@ var openStream = function(ticker) {
     });
 }
 
-var excludePositions = function(exclusions, positions) {
+var excludePositions = function(positions) {
     var ret = [];
     return new Promise((resolve, reject) => {
+        logger.log('info', 'position exclusion', 'excluding positions');
         async.eachSeries(positions, (position, callback) => {
+            logger.log('info', 'position recency', 'checking position recency');
             recentPosition(position)
             .then((pos) => {
                 if (pos) return Instrument.getInstance({instrument: utils.parseInstrumentIdFromUrl(pos.instrument)}).fetch();
             }).catch((err) => { callback(err) })
             .then((inst) => {
-                if (!_.isUndefined(inst) && !utils.inArray(inst.toJSON().symbol, exclusions)) {
+                if (!_.isUndefined(inst) && !utils.inArray(inst.toJSON().symbol, options.exclusions)) {
                     ret.push({
                         symbol: inst.get('symbol'),
                         quantity: parseInt(position.quantity),
@@ -132,7 +151,7 @@ var excludePositions = function(exclusions, positions) {
         },
         (err) => {
             if (err) {
-                console.log(err);
+                logger.log('error', 'exclude positions', err);
                 reject(err);
             }
             resolve(ret);
@@ -142,49 +161,53 @@ var excludePositions = function(exclusions, positions) {
 
 var recentPosition = function(position) {
     return new Promise((resolve, reject) => {
+        logger.log('debug', 'position order check', 'instrument: ' + utils.parseInstrumentIdFromUrl(position.instrument));
         new Orders({instrument: utils.parseInstrumentIdFromUrl(position.instrument)}).fetch()
         .then((orders) => {
             let _orders = orders.toJSON();
+            logger.log('debug', 'position order', _orders.length + ' orders found');
             let found = false;
             for (var i in _orders) {
                 if (utils.positionCreatedLastWeekday(_orders[i].created_at)) {
-                    console.log("Position was created in the last trading day!");
+                    logger.log('debug', 'position recency', "Position was created in the last trading day");
                     found = true;
                     break;
                 }
             };
-            if (found) resolve(position);
-            if (!found) resolve(null);
-        }).catch((err) => { reject(err) });
+            resolve(found || !options.restrict ? position : null);
+        }).catch((err) => {
+            logger.log('error', 'order fetch error', err);
+            reject(err)
+        });
     });
 }
 
-var trackPosition = function(priceStream, instrument, stopMargin, strategy, logger) {
+var trackPosition = function(priceStream, instrument, analytics) {
     return new Promise((resolve, reject) => {
         // The container that will house all data about the state of the current tick of market data
         var tick = {}, ticks = [];;
 
-        var stopPrice, simulation_state, currentMargin, bestProfitMargin = -Infinity, bestAsk = 0, newHigh;
+        var stopPrice, currentMargin, bestProfitMargin = -Infinity, bestAsk = 0, newHigh;
 
         switch (process.env.SIMULATE) {
             case '0':
-                simulation_state = 'off';
+                options.simulation_state = 'off';
                 break;
             default:
-                simulation_state = 'on';
+                options.simulation_state = 'on';
         }
 
         if (priceStream) {
-            console.log('-------------------------------------');
-            console.log('T R A D I N G   C O N F I G');
-            console.log('-------------------------------------');
-            console.log('Ticker:', instrument.symbol);
-            console.log('simulation mode:', simulation_state);
-            console.log('initial stop margin:', stopMargin);
-            console.log('average cost:', instrument.cost);
-            console.log('Max spread:', config.get('trading.spread.max'));
-            console.log('Min spread:', config.get('trading.spread.min'));
-            console.log('-------------------------------------');
+            logger.log('info', 'position tracking',
+                {
+                    ticker: instrument.symbol,
+                    simulation: options.simulation_state,
+                    strategy: options.userStrategy,
+                    initial_stop: options.stopMargin,
+                    cost: instrument.cost,
+                    spread_max: config.get('trading.spread.max'),
+                    spread_min: config.get('trading.spread.min')
+            });
 
             priceStream.on('frame', (frame) => {
                 tick.ticker = frame.ticker;
@@ -212,9 +235,9 @@ var trackPosition = function(priceStream, instrument, stopMargin, strategy, logg
                         bestAsk = newHigh ? tick.ask : bestAsk;
                         // Initial stop price or calculated new stopPrice from strategy execution
                         if (!stopPrice) {
-                            stopPrice = tick.ask / (1 + stopMargin)
+                            stopPrice = tick.ask / (1 + options.stopMargin)
                         } else if (!_.isUndefined(tick.lastask)) {
-                        stopPrice = new Strategy(strategy, strategies,
+                        stopPrice = new Strategy(options.userStrategy, strategies,
                                 {
                                 lastPrice: tick.lastask,
                                 currentPrice: tick.ask,
@@ -223,49 +246,49 @@ var trackPosition = function(priceStream, instrument, stopMargin, strategy, logg
                                 minStopMargin: config.get('trading.strategies.minStopMargin'),
                                 cost: instrument.cost,
                                 bestProfitMargin: bestProfitMargin,
-                                initialStopMargin: stopMargin,
+                                initialStopMargin: options.stopMargin,
                                 newHigh: newHigh
                                 }).execute();
                         }
                         tick.stop = utils.moneyify(stopPrice);
                         
                         if (tick.stop < tick.ask) {
-                            console.log(tick);
+                            logger.log('debug', 'price tick', tick);
                             tick.lastbid = _.has(tick, 'bid') ? tick.bid : null;
                             tick.lastask = _.has(tick, 'ask') ? tick.ask : null;
                             tick.lastlast = _.has(tick, 'last') ? tick.last : null;
                         } else {
                             priceStream.disconnect();
                             sellPosition(instrument, tick.ask)
-                            .then((confirm) => {
-                                console.log('---------------------------------------------');
-                                console.log("Ticker:", tick.ticker);
-                                console.log("Stopped out at:",tick.stop);
-                                console.log("Ask price was:", tick.ask);
-                                console.log("Quantity:", instrument.quantity);
-                                console.log('Trade confirmation ===>');
-                                console.log(confirm.toJSON());
-                                console.log('---------------------------------------------');
-                        
-                                logger.update(['bid', 'ask', 'stop', 'last'], ticks);
-
+                            .then((trade) => {
+                                logger.log('debug', 'sell position',
+                                    {
+                                        ticker: tick.ticker,
+                                        stop: tick.stop,
+                                        ask: tick.ask,
+                                        quantity: instrument.quantity,
+                                    });
+                                logger.log('debug', 'trade confirmation', trade.toJSON());
+                                analytics.update(['bid', 'ask', 'stop', 'last'], ticks);
                             }).catch((err) => { return null });
                         }
                     }
                 }
             });
             priceStream.on('close', (reason) => {
-                console.log("Exited price stream:", reason);
+                logger.log('info', 'stream exit', reason);
             });
             resolve();
         } else {
-            reject("No tradeable instruments were found...");
+            logger.log('error', 'stream error', 'No stream was connected.')
+            reject("No stream was connected.");
         }
     });
 }
 
 var sellPosition = function(instrument, price) {
     return new Promise((resolve, reject) => {
+        logger.log('info', 'trade create', 'creating sell order');
         Trade.getInstance().create({
             symbol: instrument.symbol,
             quantity: instrument.quantity.toString(),

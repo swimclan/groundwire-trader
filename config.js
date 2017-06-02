@@ -4,6 +4,10 @@ var utils = require('./utils');
 var path = require('path');
 
 let config = {
+    log: {
+        file: process.env.LOGFILE,
+        level: process.env.LOGLEVEL
+    },
     timeouts: {
         trade: 200
     },

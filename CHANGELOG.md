@@ -1,5 +1,6 @@
 | Version              | Type      | Description                                                                                               |
 | -------------------- | --------- | --------------------------------------------------------------------------------------------------------- |
+| **v1.10.1**          | *Feature* | Introduced robust logging utilities                                                                       |
 | **v1.9.3**           | *Feature* | Ability to be aware of what positions were acquired over one trading day ago so as not to disturb already-tracked positions for a multi-day swing trade. |
 | **v1.9.2**           | *Feature* | Support child collections in the Model class library                                                      |
 | **v1.9.1**           | *Feature* | Support holiday calendar to prevent buying and selling on posted market holidays                          |
