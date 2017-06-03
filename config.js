@@ -5,7 +5,7 @@ var path = require('path');
 
 let config = {
     log: {
-        file: process.env.LOGFILE,
+        file: path.resolve(__dirname + '/' + process.env.LOGFILE),
         level: process.env.LOGLEVEL
     },
     timeouts: {
