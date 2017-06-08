@@ -8,6 +8,9 @@ let config = {
         file: path.resolve(__dirname + '/' + process.env.LOGFILE),
         level: process.env.LOGLEVEL
     },
+    analytics: {
+        enabled: true
+    },
     timeouts: {
         trade: 200
     },

@@ -78,7 +78,7 @@ module.exports = function(req, res, next) {
         async.eachOfSeries(tradeables, (tradeable, i, callback) => {
             Promise.all([
                 openStream(tradeable.symbol),
-                new Analytics().authorize().create(utils.logFileName(tradeable.symbol, options.userStrategy))
+                config.get('analytics.enabled') ? new Analytics().authorize().create(utils.logFileName(tradeable.symbol, options.userStrategy)) : Promise.resolve(null)
             ])
             .then(([stream, analytics]) => {
                 return trackPosition(stream, tradeable, analytics)
@@ -225,7 +225,7 @@ var trackPosition = function(priceStream, instrument, analytics) {
                     var maxdiff = config.get('trading.spread.max') * tick.ask;
                     var mindiff = config.get('trading.spread.min') * tick.ask;
                     if (((tick.ask - tick.bid) < maxdiff) && ((tick.ask - tick.bid) > mindiff) && (tick.ask - tick.bid > 0)) {
-                        ticks.push(_.assign({}, tick));
+                        if (analytics) ticks.push(_.assign({}, tick));
                         // calculate profit margin
                         currentMargin = (tick.ask - instrument.cost) / instrument.cost;
                         bestProfitMargin = currentMargin > bestProfitMargin ? currentMargin : bestProfitMargin;
@@ -269,7 +269,7 @@ var trackPosition = function(priceStream, instrument, analytics) {
                                         quantity: instrument.quantity,
                                     });
                                 logger.log('debug', 'trade confirmation', trade.toJSON());
-                                analytics.update(['bid', 'ask', 'stop', 'last'], ticks);
+                                if (analytics) analytics.update(['bid', 'ask', 'stop', 'last'], ticks);
                             }).catch((err) => { return null });
                         }
                     }

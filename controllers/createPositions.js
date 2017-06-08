@@ -107,7 +107,7 @@ var allocateBalance = function(res, watchlist, positions, balance, shares=null) 
             .then((price) => {
                 let targetInst = {
                     instrument: inst,
-                    price: parseInt(price.get('last_trade_price')),
+                    price: utils.moneyify(parseFloat(price.get('last_trade_price'))),
                     shares: shares ? parseInt(shares) : 0 
                 };
                 logger.log('debug', 'purchaseable instrument', targetInst);
