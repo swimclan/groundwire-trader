@@ -177,6 +177,28 @@ let config = {
                 key: "key"
             }
         }
+    },
+    msn: {
+        api: {
+            url: {
+                production: "https://www.msn.com/en-us/money/getfilterresponse",
+                development: "https://www.msn.com/en-us/money/getfilterresponse"
+            },
+            secure: {
+                required: false
+            },
+            query: {
+                filters: "DiffYlDl|Yes~ExSn|ASE;NAS;NYS~Country|USA",
+                ranges: "RtCap|0;8359~Mc|500000000;762600000000~Dh|0;25~Dl|0;25",
+                sortedby: "Mc",
+                sortorder: "DESC",
+                count: 20,
+                offset: 0,
+                market: "USA",
+                sectype: "Stock",
+                ver: "2.0.6379.289"
+            }
+        }
     }
 }
 

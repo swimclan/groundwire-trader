@@ -3,6 +3,8 @@ var router = express.Router();
 var createPositions = require('../controllers/createPositions');
 var tradePositions = require('../controllers/tradePositions');
 var package = require('../package.json');
+var screenStocks = require('../controllers/screenStocks');
+
 /* Create Positions from Watchlist */
 router.get('/positions/create/:shares?', createPositions);
 
@@ -13,5 +15,8 @@ router.post('/positions/trade', tradePositions)
 router.get('/version', function(req, res, next) {
     res.json({ version: package.version });
 });
+
+/* Get the MSN screener */
+router.get('/screen', screenStocks);
 
 module.exports = router;
