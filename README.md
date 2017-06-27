@@ -2,7 +2,7 @@
 This is the GroundWire trading application.  It is a server that is configured to execute trades according to various built-in strategies.  Once positions are generated, the server will monitor price action using the Intrinio&trade; Real-Time Exchange websocket stream and implement a trailing stop loss for each stock position that it is configured to manage. The trailing stop loss algorithm is configurable to be less or more agressive in terms of price tracking so as to be intelligent about how to lock in profit margin or minimize loss.
 
 # Version
-1.10.3
+1.11.0
 <br>
 <em>See</em> [`CHANGELOG.md`](./CHANGELOG.md) <em>for more detailed view of all versions</em>
 
@@ -16,6 +16,10 @@ This is the GroundWire trading application.  It is a server that is configured t
 # Strategies
 
 Stop loss values are calculated according to several supported trailing-stop-loss strategies which can be [read about here](./strategies/README.md).
+
+# Stock Pick Automation
+
+App can be configured to automatically pick stocks based on an MSN stock screener lookup. Set the `screener.max` value in app config.js to set the maximum number of stock picks made from the screener.
 
 # Analytics
 

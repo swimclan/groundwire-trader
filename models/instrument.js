@@ -8,7 +8,7 @@ class Instrument extends Model {
         super(options);
         this.ticker = _has(options, 'ticker') ? options.ticker : config.get('instrument.api.defaults.ticker');
         this.instrument = _has(options, 'instrument') ? options.instrument : null;
-        this.type = this.instrument ? 'instrument' : 'ticker';
+        this.type = this.instrument ? 'instrument' : 'symbol';
         this.value = this.instrument || this.ticker;
         var query = {};
         if (config.get('instrument.api.secure.required')) {

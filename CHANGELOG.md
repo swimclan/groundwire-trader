@@ -1,5 +1,6 @@
 | Version              | Type      | Description                                                                                               |
 | -------------------- | --------- | --------------------------------------------------------------------------------------------------------- |
+| **v1.11.0**          | *Feature* | Implemented MSN stock sceener for automated stock picks                                                   |
 | **v1.10.3**          | *Feature* | Made analytics enabling a configurable feature                                                            |
 |                      | *Fix*     | Fixed price rounding for allocating balance for position create                                           |
 | **v1.10.2**          | *Fix*     | Fixed log file name resolution for all hosts                                                              |

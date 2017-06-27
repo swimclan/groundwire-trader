@@ -1,6 +1,7 @@
 'use strict';
 
 var Watchlist = require('../collections/watchlist');
+var Screener = require('../models/screener');
 var Positions = require('../collections/positions');
 var Trade = require('../models/trade');
 var Price = require('../models/price');
@@ -51,7 +52,7 @@ module.exports = function(req, res, next) {
             positionList.push(utils.parseInstrumentIdFromUrl(position.instrument));
         });
         if (connection_state) {
-            tradeWatchlist(res, positionList, shares, buying_power);
+            tradeStockList(res, positionList, shares, buying_power);
         } else {
             res.status(500);
             res.json({message: connection_message});
@@ -61,27 +62,33 @@ module.exports = function(req, res, next) {
     });
 }
 
-var tradeWatchlist = function(res, positions, shares, balance) {
+var tradeStockList = function(res, positions, shares, balance) {
     var trades = [];
     logger.log('info', 'watchlist fetch', 'fetching watch list items');
-    new Watchlist().fetch()
-    .then((watchlist) => {
-        return allocateBalance(res, watchlist, positions, balance, shares);
+    Promise.all([new Watchlist().fetch(), Screener.getInstance().fetch()])
+    .then(([watchlist, screens]) => {
+        let screenedList = screens.get('DataList');
+        return allocateBalance(res, watchlist, screenedList, positions, balance, shares);
     })
     .then((portfolio) => {
         async.eachSeries(portfolio, (item, callback) => {
             let inst = utils.parseInstrumentIdFromUrl(item.instrument);
             logger.log('info', 'trade create', `creating buy order for ${inst}`);
-            Trade.getInstance().create({
-                instrumentId: inst,
-                quantity: item.shares,
-                type: 'buy'
-            })
-            .then((trade) => {
-                logger.log('debug', 'trade confirmation', trade.toJSON());
-                trades.push(trade.toJSON());
-                setTimeout(callback, config.get('timeouts.trade'));
-            }).catch((err) => { callback(err) });
+            if (item.shares > 0) {
+                Trade.getInstance().create({
+                    instrumentId: inst,
+                    quantity: item.shares,
+                    type: 'buy'
+                })
+                .then((trade) => {
+                    logger.log('debug', 'trade confirmation', trade.toJSON());
+                    trades.push(trade.toJSON());
+                    setTimeout(callback, config.get('timeouts.trade'));
+                }).catch((err) => { callback(err) });
+            } else {
+                callback();
+                logger.log('debug', 'No shares', 'No shares were requested.  Must have at least one share to execute position');
+            }
         }, (error) => {
             if (error) return utils.throwError(error, res);
             res.json(trades);
@@ -89,29 +96,41 @@ var tradeWatchlist = function(res, positions, shares, balance) {
     }).catch((err) => { utils.throwError(err, res) });
 }
 
-var allocateBalance = function(res, watchlist, positions, balance, shares=null) {
+var allocateBalance = function(res, watchlist, screenList, positions, balance, shares=null) {
     var portfolio = [];
     var balance_left = balance;
+    let stockList = mergeStockLists(screenList, watchlist);
     logger.log('info', 'balance allocation', `allocating balance starting with $${balance_left.toString()}`);
     return new Promise((resolve, reject) => {
-        async.eachSeries(watchlist.models, (watchitem, callback) => {
-            var inst = utils.parseInstrumentIdFromUrl(watchitem.get('instrument'));
-            if (utils.inArray(inst, positions)) return callback();
-            logger.log('info', 'instrument fetch', `fetching instrument ${inst}`);
-            Instrument.getInstance({ instrument: inst }).fetch()
+        async.eachSeries(stockList, (stockitem, callback) => {
+            if (stockitem.type === 'watchlist') {
+                var inst = utils.parseInstrumentIdFromUrl(stockitem.instrument);
+                logger.log('info', 'instrument fetch', `fetching instrument ${inst}`);
+            } else {
+                var tick = stockitem.ticker;
+                logger.log('info', 'ticker fetch', `fetching ticker ${tick}`);
+            }
+            let instArg = stockitem.type === 'screen' ? { ticker: tick } : { instrument: inst };
+            Instrument.getInstance(instArg).fetch()
             .then((stock) => {
-                if (!stock.get('tradeable')) return callback();
+                inst = utils.parseInstrumentIdFromUrl(stock.get('id'));
+                if (!stock.get('tradeable') || utils.inArray(inst, positions)) {
+                    logger.log('debug', 'tradeable check', `${stock.get('symbol')} is not tradeable`);
+                    return null;
+                }
                 logger.log('info', 'price fetch', `fetching price for ticker symbol ${stock.get('symbol')}`)
                 return Price.getInstance({ symbol: stock.get('symbol') }).fetch()
             }).catch((err) => { callback(err) })
             .then((price) => {
-                let targetInst = {
-                    instrument: inst,
-                    price: utils.moneyify(parseFloat(price.get('last_trade_price'))),
-                    shares: shares ? parseInt(shares) : 0 
-                };
-                logger.log('debug', 'purchaseable instrument', targetInst);
-                portfolio.push(targetInst);
+                if (price) {
+                    let targetInst = {
+                        instrument: inst,
+                        price: utils.moneyify(parseFloat(price.get('last_trade_price'))),
+                        shares: shares ? parseInt(shares) : 0
+                    };
+                    logger.log('debug', 'purchaseable instrument', targetInst);
+                    portfolio.push(targetInst);
+                }
                 callback();
             }).catch((err) => { callback(err) });
         },
@@ -130,4 +149,11 @@ var allocateBalance = function(res, watchlist, positions, balance, shares=null) 
             resolve(portfolio);
         });
     });
+}
+
+var mergeStockLists = function(screenList, watchlist) {
+    var screenRedux = screenList.map(screenStock => ({type: 'screen', ticker: screenStock.Sym}));
+    screenRedux.splice(config.get('screener.max'));
+    var watchListRedux = watchlist.models.map(watchListStock => ({type: 'watchlist', instrument: watchListStock.get('instrument')}));
+    return [...watchListRedux, ...screenRedux];
 }

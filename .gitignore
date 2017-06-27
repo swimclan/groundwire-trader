@@ -1,4 +1,4 @@
 .env
 ssl/**
-logs/**
+logs/
 node_modules/

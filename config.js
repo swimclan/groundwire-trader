@@ -11,6 +11,9 @@ let config = {
     analytics: {
         enabled: true
     },
+    screener: {
+        max: 3
+    },
     timeouts: {
         trade: 200
     },

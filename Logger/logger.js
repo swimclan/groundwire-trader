@@ -4,7 +4,7 @@ var utils = require('../utils');
 
 class Logger {
     constructor(level, logfile) {
-        this.levels = ['info', 'error', 'debug'];
+        this.levels = ['info', 'error', 'debug', 'off'];
         this.level = this.getLevel(level);
         this.logFile = logfile;
     }
@@ -15,7 +15,7 @@ class Logger {
 
     log(type, title, data) {
         let _type = type.toLowerCase();
-        if (this.getLevel(_type) <= this.level) {
+        if (this.getLevel(_type) <= this.level && this.level !== 3) {
             this.logToFile(type, title, data);
             this.logToConsole(type, title, data);
         }
