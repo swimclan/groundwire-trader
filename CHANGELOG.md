@@ -1,5 +1,6 @@
 | Version              | Type      | Description                                                                                               |
 | -------------------- | --------- | --------------------------------------------------------------------------------------------------------- |
+| **v1.12.0**          | *Feature* | Added holiday awareness in checking for the last weekday when searching for eligible positions to trade   |
 | **v1.11.0**          | *Feature* | Implemented MSN stock sceener for automated stock picks                                                   |
 | **v1.10.3**          | *Feature* | Made analytics enabling a configurable feature                                                            |
 |                      | *Fix*     | Fixed price rounding for allocating balance for position create                                           |
