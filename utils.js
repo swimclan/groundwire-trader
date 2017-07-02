@@ -72,17 +72,51 @@ module.exports.tzOffset = function() {
     return moment.parseZone(today).utcOffset();
 }
 
-module.exports.lastWeekday = function() {
-  var current = moment();
-  while (true) {
-    current = current.subtract(1, 'day');
-    if ((current.day() >= 1) && (current.day() <= 5)) break;
-  }
-  return current;
+module.exports.lastWeekday = function(holidays) {
+    var current = moment();
+    let lastHoliday = this.lastHoliday(holidays);
+    while (true) {
+        current = current.subtract(1, 'day');
+        if (current.isSame(moment(lastHoliday.date), 'day')) continue;
+        if ((current.day() >= 1) && (current.day() <= 5)) break;
+    }
+    return current;
 }
 
-module.exports.positionCreatedLastWeekday = function(create_date) {
-    return this.lastWeekday().dayOfYear() === moment(create_date).dayOfYear();
+module.exports.positionCreatedLastWeekday = function(create_date, holidays) {
+    return this.lastWeekday(holidays).dayOfYear() === moment(create_date).dayOfYear();
+}
+
+module.exports.nextHoliday = function(holidays) {
+    var current = moment();
+    var closest = moment().add(1, 'year').diff(current);
+    var closestHoliday = {};
+    let _holidays = holidays.toJSON();
+    _holidays.forEach((holiday) => {
+        if (moment(holiday.date).isAfter(current)) {
+            if (moment(holiday.date).diff(current) < closest) {
+                closest = moment(holiday.date).diff(current);
+                closestHoliday = holiday;
+            }
+        }
+    });
+    return closestHoliday;
+}
+
+module.exports.lastHoliday = function(holidays) {
+    var current = moment();
+    var closest = current.diff(moment().subtract(1, 'year'));
+    var closestHoliday = {};
+    let _holidays = holidays.toJSON();
+    _holidays.forEach((holiday) => {
+        if (moment(holiday.date).isBefore(current)) {
+            if (moment(holiday.date).diff(current) < closest) {
+                closest = current.diff(moment(holiday.date));
+                closestHoliday = holiday;
+            }
+        }
+    });
+    return closestHoliday;
 }
 
 module.exports.isMarketClosed = function(holidays) {

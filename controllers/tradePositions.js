@@ -49,6 +49,7 @@ module.exports = function(req, res, next) {
 
     new Holidays().fetch()
     .then((holidays) => {
+        options.holidays = holidays;
         if (!utils.isMarketClosed(holidays)) return new Positions().fetch();
         logger.log('error', 'market closed error', `Market is closed for ${utils.isMarketClosed(holidays)}`);
         options.connection_message = `Connection aborted.  Market is closed for ${utils.isMarketClosed(holidays)}`;
@@ -168,7 +169,7 @@ var recentPosition = function(position) {
             logger.log('debug', 'position order', _orders.length + ' orders found');
             let found = false;
             for (var i in _orders) {
-                if (utils.positionCreatedLastWeekday(_orders[i].created_at)) {
+                if (utils.positionCreatedLastWeekday(_orders[i].created_at, options.holidays)) {
                     logger.log('debug', 'position recency', "Position was created in the last trading day");
                     found = true;
                     break;
