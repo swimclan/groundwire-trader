@@ -39,9 +39,9 @@ let config = {
                     user: process.env.USERNAME,
                     pass: process.env.PASSWORD
                 },
-                agentOptions: {
-                    passphrase: process.env.SSL_PASSPHRASE
-                }
+                cert: fs.readFileSync(path.join(__dirname, 'ssl', 'groundwire.co.crt')),
+                key: fs.readFileSync(path.join(__dirname, 'ssl', 'groundwire.co.key')),
+                strictSSL: process.env.STRICT_SSL != 0 ? true : false
             }
         },
         create: {
@@ -51,9 +51,9 @@ let config = {
                     user: process.env.USERNAME,
                     pass: process.env.PASSWORD
                 },
-                agentOptions: {
-                    passphrase: process.env.SSL_PASSPHRASE
-                }
+                cert: fs.readFileSync(path.join(__dirname, 'ssl', 'groundwire.co.crt')),
+                key: fs.readFileSync(path.join(__dirname, 'ssl', 'groundwire.co.key')),
+                strictSSL: process.env.STRICT_SSL != 0 ? true : false
             }
         }
     },
