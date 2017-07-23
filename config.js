@@ -39,8 +39,11 @@ let config = {
                     user: process.env.USERNAME,
                     pass: process.env.PASSWORD
                 },
-                cert: fs.readFileSync(path.join(__dirname, 'ssl', 'groundwire.co.crt')),
-                key: fs.readFileSync(path.join(__dirname, 'ssl', 'groundwire.co.key')),
+                agentOptions: {
+                    cert: fs.readFileSync(path.join(__dirname, 'ssl', 'groundwire.co.crt')),
+                    key: fs.readFileSync(path.join(__dirname, 'ssl', 'groundwire.co.key')),
+                    ca: fs.readFileSync(path.join(__dirname, 'ssl', 'groundwire.co.pem'))
+                },
                 strictSSL: process.env.STRICT_SSL != 0 ? true : false
             }
         },
@@ -51,8 +54,11 @@ let config = {
                     user: process.env.USERNAME,
                     pass: process.env.PASSWORD
                 },
-                cert: fs.readFileSync(path.join(__dirname, 'ssl', 'groundwire.co.crt')),
-                key: fs.readFileSync(path.join(__dirname, 'ssl', 'groundwire.co.key')),
+                agentOptions: {
+                    cert: fs.readFileSync(path.join(__dirname, 'ssl', 'groundwire.co.crt')),
+                    key: fs.readFileSync(path.join(__dirname, 'ssl', 'groundwire.co.key')),
+                    ca: fs.readFileSync(path.join(__dirname, 'ssl', 'groundwire.co.pem'))
+                },
                 strictSSL: process.env.STRICT_SSL != 0 ? true : false
             }
         }

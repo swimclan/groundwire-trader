@@ -1,5 +1,6 @@
 | Version              | Type      | Description                                                                                               |
 | -------------------- | --------- | --------------------------------------------------------------------------------------------------------- |
+| **v1.12.2**          | *Update*  | Added a chain cert in the request config for certifacate authorities on production.                       |
 | **v1.12.1**          | *Fix*     | Fixed the SSL capability of the server.  Ensuring that all requests made to the api are made by qualified ssl certificate. |
 | **v1.12.0**          | *Feature* | Added holiday awareness in checking for the last weekday when searching for eligible positions to trade   |
 | **v1.11.0**          | *Feature* | Implemented MSN stock sceener for automated stock picks                                                   |
