@@ -13,6 +13,7 @@ var Strategy = require('../lib/Strategy');
 var Analytics = require('../Analytics');
 var Holidays = require('../collections/holidays');
 var Orders = require('../collections/orders');
+var ProfitLock = require('../models/profitLock');
 var Logger = require('../Logger');
 
 let logger = new Logger(config.get('log.level'), config.get('log.file'));
@@ -24,6 +25,7 @@ module.exports = function(req, res, next) {
     options.exclusions = [];
     options.connection_state = true;
     options.connection_message = "Stream connection established";
+    options.profitLock = ProfitLock.getInstance({enabled: false, margin: null, executed: false});
 
     if (_.has(req.body, 'exclusions')) {
         options.exclusions = options.exclusions.concat(utils.splitStringList(req.body.exclusions));
@@ -45,6 +47,12 @@ module.exports = function(req, res, next) {
     if (!options.stopMargin) {
         logger.log('error', 'data format error', 'Invalid stop margin provided.');
         return utils.throwError("Invalid stop margin provided", res);
+    }
+
+    if (_.has(req.body, 'profitlock')) {
+        options.profitLock.set('enabled', true);
+        options.profitLock.set('margin', parseFloat(req.body.profitlock));
+        logger.log('info', 'profit lock enabled', options.profitLock.toJSON());
     }
 
     new Holidays().fetch()
@@ -188,7 +196,13 @@ var trackPosition = function(priceStream, instrument, analytics) {
         // The container that will house all data about the state of the current tick of market data
         var tick = {}, ticks = [];;
 
-        var stopPrice, currentMargin, bestProfitMargin = -Infinity, bestAsk = 0, newHigh;
+        var stopPrice, 
+        currentMargin,
+        bestProfitMargin = -Infinity, 
+        bestAsk = 0, 
+        newHigh, 
+        firstAsk,
+        dayMargin;
 
         switch (process.env.SIMULATE) {
             case '0':
@@ -217,6 +231,7 @@ var trackPosition = function(priceStream, instrument, analytics) {
                         tick.bid = frame.price;
                         break;
                     case 'ask':
+                        firstAsk = !firstAsk ? tick.ask : firstAsk;
                         tick.ask = frame.price;
                         break;
                     case 'last':
@@ -227,10 +242,10 @@ var trackPosition = function(priceStream, instrument, analytics) {
                     var mindiff = config.get('trading.spread.min') * tick.ask;
                     if (((tick.ask - tick.bid) < maxdiff) && ((tick.ask - tick.bid) > mindiff) && (tick.ask - tick.bid > 0)) {
                         if (analytics) ticks.push(_.assign({}, tick));
-                        // calculate profit margin
+                        // calculate profit margins
                         currentMargin = (tick.ask - instrument.cost) / instrument.cost;
                         bestProfitMargin = currentMargin > bestProfitMargin ? currentMargin : bestProfitMargin;
-
+                        dayMargin = (tick.ask - firstAsk) / firstAsk;
                         // Calculate best ask
                         newHigh = tick.ask > bestAsk;
                         bestAsk = newHigh ? tick.ask : bestAsk;
@@ -238,7 +253,10 @@ var trackPosition = function(priceStream, instrument, analytics) {
                         if (!stopPrice) {
                             stopPrice = tick.ask / (1 + options.stopMargin)
                         } else if (!_.isUndefined(tick.lastask)) {
-                        stopPrice = new Strategy(options.userStrategy, strategies,
+                            // determine if profit lock is on and if it needs to be executed on the stop price
+                            stopPrice = options.profitLock.lockCheck(stopPrice, instrument.cost, currentMargin) ? 
+                            instrument.cost :
+                            new Strategy(options.userStrategy, strategies,
                                 {
                                 lastPrice: tick.lastask,
                                 currentPrice: tick.ask,

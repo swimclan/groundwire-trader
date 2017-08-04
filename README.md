@@ -2,20 +2,20 @@
 This is the GroundWire trading application.  It is a server that is configured to execute trades according to various built-in strategies.  Once positions are generated, the server will monitor price action using the Intrinio&trade; Real-Time Exchange websocket stream and implement a trailing stop loss for each stock position that it is configured to manage. The trailing stop loss algorithm is configurable to be less or more agressive in terms of price tracking so as to be intelligent about how to lock in profit margin or minimize loss.
 
 # Version
-1.12.2
+1.13.0
 <br>
 <em>See</em> [`CHANGELOG.md`](./CHANGELOG.md) <em>for more detailed view of all versions</em>
 
 # Routes
 
-| Route                          | HTTP Verb         | Request Body         | Description                                                           |
-| ------------------------------ | ----------------- | -------------------- | --------------------------------------------------------------------- |
-| `/positions/create/:quantity?` | GET               | N/A                  | This route when requested will kick off the purchasing of all instruments that are in the user's watch list.  Only tradeable instruments will be bought.  Orders with untradeable insrtuments will simply not be filled. An optional share quantity can be appended to the request URL.  If no share quantity is specified, the app will automatically determine how many shares to buy for each stock based on how much buying power is in account |
-| `/positions/trade`             | POST              | (1) `exclusions <string>`: a comma seperated list of tickers to ignore<br>(2) `stopmargin <float>`: A decimal value representing the percentage of the initial stop loss margin of the strategy in use<br>(3) `strategy <string>` The descriptor for the trailing stop-loss strategy desired (e.g. `slope`)<br>(4) `restrict <bool>` Switch to enforce strict single day position tracking.  If ommitted it will default to false | This route will kick off the trading process for any stock positions currently in the market that are not in the exclusions list.  Once the best ask price is less than the current stop loss, it will execute a market sell into Robinhood at the last best ask price |
+| Route                          | HTTP Verb         | Request Body                        | Description                                                           |
+| ------------------------------ | ----------------- | ----------------------------------- | --------------------------------------------------------------------- |
+| `/positions/create/:quantity?` | GET               | N/A                                 | This route when requested will kick off the purchasing of all instruments that are in the user's watch list.  Only tradeable instruments will be bought.  Orders with untradeable insrtuments will simply not be filled. An optional share quantity can be appended to the request URL.  If no share quantity is specified, the app will automatically determine how many shares to buy for each stock based on how much buying power is in account |
+| `/positions/trade`             | POST              | (1) `exclusions <string>`: a comma seperated list of tickers to ignore<br>(2) `stopmargin <float>`: A decimal value representing the percentage of the initial stop loss margin of the strategy in use<br>(3) `strategy <string>` The descriptor for the trailing stop-loss strategy desired (e.g. `slope`)<br>(4) `restrict <bool>` Switch to enforce strict single day position tracking.  If ommitted it will default to false<br>(5) `profitlock <float>` Specify a position profit margin that will trigger a break-even stop loss | This route will kick off the trading process for any stock positions currently in the market that are not in the exclusions list.  Once the best ask price is less than the current stop loss, it will execute a market sell into Robinhood at the last best ask price |
 
 # Strategies
 
-Stop loss values are calculated according to several supported trailing-stop-loss strategies which can be [read about here](./strategies/README.md).
+Stop loss values are calculated according to several supported trailing-stop-loss strategies which can be [read about here](./strategies/README.md).  An optional `profitlock` parameter can be included in the position trade call to lock in a break-even stop loss once a specified profit margin is received.  This is to ensure that no loss will be taken on trades that move up early.
 
 # Stock Pick Automation
 

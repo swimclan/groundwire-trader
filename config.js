@@ -24,7 +24,7 @@ let config = {
     trading: {
         spread: {
             min: 0,
-            max: 0.03
+            max: 0.015
         },
         strategies: {
             minStopMargin: 0.001,
