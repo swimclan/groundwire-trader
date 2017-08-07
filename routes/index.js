@@ -5,8 +5,11 @@ var tradePositions = require('../controllers/tradePositions');
 var package = require('../package.json');
 var screenStocks = require('../controllers/screenStocks');
 
-/* Create Positions from Watchlist */
+/* Create Positions from Watchlist (GET) */
 router.get('/positions/create/:shares?', createPositions);
+
+/* Create Positions from Watchlist (POST) */
+router.post('/positions/create/:shares?', createPositions);
 
 /* Trade stocks that have current positions */
 router.post('/positions/trade', tradePositions)

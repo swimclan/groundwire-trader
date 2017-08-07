@@ -1,5 +1,6 @@
 | Version              | Type      | Description                                                                                               |
 | -------------------- | --------- | --------------------------------------------------------------------------------------------------------- |
+| **v1.14.0**          | *Feature* | Allowed for position create to respond to post request with custom screener params.  Config is fallback.  |
 | **v1.13.0**          | *Feature* | Added profit lock feature to specify a return margin that sets the stop loss to break even automatically  |
 | **v1.12.2**          | *Update*  | Added a chain cert in the request config for certifacate authorities on production.                       |
 | **v1.12.1**          | *Fix*     | Fixed the SSL capability of the server.  Ensuring that all requests made to the api are made by qualified ssl certificate. |

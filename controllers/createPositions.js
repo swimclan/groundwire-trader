@@ -11,13 +11,17 @@ var config = require('../config');
 var async = require('async');
 var Accounts = require('../collections/accounts');
 var Holidays = require('../collections/holidays');
+var Preferences = require('../models/preferences');
 var _ = require('lodash');
 var Logger = require('../Logger');
 
 let logger = new Logger(config.get('log.level'), config.get('log.file'));
 
+var preferences;
+
 module.exports = function(req, res, next) {
     logger.log('info', 'initiating', 'initializing positions create routine');
+    preferences = Preferences.getInstance(req.body);
     var shares = utils.hasKey('shares', req.params) ? req.params.shares : null;
     logger.log('debug', 'request body', `shares specified: ${shares ? shares : 'none'}`);
     var buying_power, connection_state=true, connection_message;
@@ -64,8 +68,13 @@ module.exports = function(req, res, next) {
 
 var tradeStockList = function(res, positions, shares, balance) {
     var trades = [];
+    var screenOptions = {};
     logger.log('info', 'watchlist fetch', 'fetching watch list items');
-    Promise.all([new Watchlist().fetch(), Screener.getInstance().fetch()])
+    if (preferences.has('screenfilters')) screenOptions.filters = preferences.get('screenfilters');
+    if (preferences.has('screenranges')) screenOptions.ranges = preferences.get('screenranges');
+    logger.log('debug', 'screener options', screenOptions);
+    let screener = Screener.getInstance(screenOptions);
+    Promise.all([new Watchlist().fetch(), screener.fetch()])
     .then(([watchlist, screens]) => {
         let screenedList = screens.get('DataList');
         return allocateBalance(res, watchlist, screenedList, positions, balance, shares);
@@ -75,16 +84,22 @@ var tradeStockList = function(res, positions, shares, balance) {
             let inst = utils.parseInstrumentIdFromUrl(item.instrument);
             logger.log('info', 'trade create', `creating buy order for ${inst}`);
             if (item.shares > 0) {
-                Trade.getInstance().create({
-                    instrumentId: inst,
-                    quantity: item.shares,
-                    type: 'buy'
-                })
-                .then((trade) => {
-                    logger.log('debug', 'trade confirmation', trade.toJSON());
-                    trades.push(trade.toJSON());
-                    setTimeout(callback, config.get('timeouts.trade'));
-                }).catch((err) => { callback(err) });
+                // check to see if executions are enabled in .env
+                if (process.env.EXECUTE == 0) {
+                    logger.log('debug', 'trade not executed (deactivated)', {instrumentId: inst, quantity: item.shares, type: 'buy'});
+                    return callback();
+                } else {
+                    Trade.getInstance().create({
+                        instrumentId: inst,
+                        quantity: item.shares,
+                        type: 'buy'
+                    })
+                    .then((trade) => {
+                        logger.log('debug', 'trade confirmation', trade.toJSON());
+                        trades.push(trade.toJSON());
+                        setTimeout(callback, config.get('timeouts.trade'));
+                    }).catch((err) => { callback(err) });
+                }
             } else {
                 callback();
                 logger.log('debug', 'No shares', 'No shares were requested.  Must have at least one share to execute position');
@@ -113,8 +128,8 @@ var allocateBalance = function(res, watchlist, screenList, positions, balance, s
             let instArg = stockitem.type === 'screen' ? { ticker: tick } : { instrument: inst };
             Instrument.getInstance(instArg).fetch()
             .then((stock) => {
-                inst = utils.parseInstrumentIdFromUrl(stock.get('id'));
-                if (!stock.get('tradeable') || utils.inArray(inst, positions)) {
+                inst = stock.get('id') !== null ? utils.parseInstrumentIdFromUrl(stock.get('id')) : null;
+                if (!stock.get('tradeable') || utils.inArray(inst, positions) || inst === null) {
                     logger.log('debug', 'tradeable check', `${stock.get('symbol')} is not tradeable`);
                     return null;
                 }
@@ -153,7 +168,8 @@ var allocateBalance = function(res, watchlist, screenList, positions, balance, s
 
 var mergeStockLists = function(screenList, watchlist) {
     var screenRedux = screenList.map(screenStock => ({type: 'screen', ticker: screenStock.Sym}));
-    screenRedux.splice(config.get('screener.max'));
+    let screenerMax = preferences.has('screenmax') ? preferences.get('screenmax') : config.get('screener.max');
+    screenRedux.splice(screenerMax);
     var watchListRedux = watchlist.models.map(watchListStock => ({type: 'watchlist', instrument: watchListStock.get('instrument')}));
     return [...watchListRedux, ...screenRedux];
 }
