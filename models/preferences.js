@@ -10,7 +10,15 @@ class Preferences extends Model {
         return [
             'screenmax',
             'screenfilters',
-            'screenranges'
+            'screenranges',
+            'exclusions',
+            'restrict',
+            'strategy',
+            'profitlock',
+            'stopmargin',
+            'maxspread',
+            'c',
+            'minstop'
         ];
     }
 }

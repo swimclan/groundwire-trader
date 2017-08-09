@@ -14,6 +14,7 @@ var Analytics = require('../Analytics');
 var Holidays = require('../collections/holidays');
 var Orders = require('../collections/orders');
 var ProfitLock = require('../models/profitLock');
+var Preferences = require('../models/preferences');
 var Logger = require('../Logger');
 
 let logger = new Logger(config.get('log.level'), config.get('log.file'));
@@ -21,37 +22,58 @@ let logger = new Logger(config.get('log.level'), config.get('log.file'));
 let options = {};
 
 module.exports = function(req, res, next) {
+    let preferences = Preferences.getInstance(req.body);
     logger.log('info', 'initiating', 'initializing positions trade routine');
-    options.exclusions = [];
     options.connection_state = true;
     options.connection_message = "Stream connection established";
     options.profitLock = ProfitLock.getInstance({enabled: false, margin: null, executed: false});
 
-    if (_.has(req.body, 'exclusions')) {
-        options.exclusions = options.exclusions.concat(utils.splitStringList(req.body.exclusions));
+    if (preferences.has('exclusions')) {
+        preferences.set('exclusions', utils.splitStringList(preferences.get('exclusions')));
     }
     
-    if (!_.has(req.body, 'stopmargin')) {
+    if (!preferences.has('stopmargin')) {
         logger.log('error', 'missing request property', 'No stop margin was found in request.');
         return utils.throwError("No stop margin was found! Please include a stop margin percentage...", res);
     }
-    if (!_.has(req.body, 'strategy')) {
+    if (!preferences.has('strategy')) {
         logger.log('error', 'missing request property', 'No strategy was specified in request.');
         return utils.throwError("No strategy was specified.  Please supply a valid strategy...", res);
     }
-    options.stopMargin = parseFloat(req.body.stopmargin);
-    options.userStrategy = req.body.strategy;
 
-    options.restrict = _.has(req.body, 'restrict') ? (req.body.restrict === 'true') || (req.body.restrict === '1') : false;
+    if (preferences.has('maxspread')) {
+        options.maxSpread = parseFloat(preferences.get('maxspread'));
+    } else {
+        options.maxSpread = config.get('trading.spread.max');
+    }
+
+    if (preferences.has('c')) {
+        options.c = parseFloat(preferences.get('c'));
+    } else {
+        options.c = config.get('trading.strategies.c');
+    }
+
+    if (preferences.has('minstop')) {
+        options.minStop = parseFloat(preferences.get('minstop'));
+    } else {
+        options.minStop = config.get('trading.strategies.minStopMargin');
+    }
+
+    options.minSpread = config.get('trading.spread.min');
+    options.stopMargin = parseFloat(preferences.get('stopmargin'));
+    options.userStrategy = preferences.get('strategy');
+    options.exclusions = preferences.get('exclusions');
+
+    options.restrict = preferences.has('restrict') ? (preferences.get('restrict') === 'true') || (preferences.get('restrict') === '1') : false;
 
     if (!options.stopMargin) {
         logger.log('error', 'data format error', 'Invalid stop margin provided.');
         return utils.throwError("Invalid stop margin provided", res);
     }
 
-    if (_.has(req.body, 'profitlock')) {
+    if (preferences.has('profitlock')) {
         options.profitLock.set('enabled', true);
-        options.profitLock.set('margin', parseFloat(req.body.profitlock));
+        options.profitLock.set('margin', parseFloat(preferences.get('profitlock')));
         logger.log('info', 'profit lock enabled', options.profitLock.toJSON());
     }
 
@@ -220,8 +242,8 @@ var trackPosition = function(priceStream, instrument, analytics) {
                     strategy: options.userStrategy,
                     initial_stop: options.stopMargin,
                     cost: instrument.cost,
-                    spread_max: config.get('trading.spread.max'),
-                    spread_min: config.get('trading.spread.min')
+                    spread_max: options.maxSpread,
+                    spread_min: options.minSpread
             });
 
             priceStream.on('frame', (frame) => {
@@ -238,8 +260,8 @@ var trackPosition = function(priceStream, instrument, analytics) {
                         tick.last = frame.price;
                 }
                 if (_.has(tick, 'bid') && _.has(tick, 'ask')) {
-                    var maxdiff = config.get('trading.spread.max') * tick.ask;
-                    var mindiff = config.get('trading.spread.min') * tick.ask;
+                    var maxdiff = options.maxSpread * tick.ask;
+                    var mindiff = options.minSpread * tick.ask;
                     if (((tick.ask - tick.bid) < maxdiff) && ((tick.ask - tick.bid) > mindiff) && (tick.ask - tick.bid > 0)) {
                         if (analytics) ticks.push(_.assign({}, tick));
                         // calculate profit margins
@@ -261,8 +283,8 @@ var trackPosition = function(priceStream, instrument, analytics) {
                                 lastPrice: tick.lastask,
                                 currentPrice: tick.ask,
                                 lastStop: stopPrice,
-                                coefficient: config.get('trading.strategies.c'),
-                                minStopMargin: config.get('trading.strategies.minStopMargin'),
+                                coefficient: options.c,
+                                minStopMargin: options.minStop,
                                 cost: instrument.cost,
                                 bestProfitMargin: bestProfitMargin,
                                 initialStopMargin: options.stopMargin,
@@ -278,18 +300,27 @@ var trackPosition = function(priceStream, instrument, analytics) {
                             tick.lastlast = _.has(tick, 'last') ? tick.last : null;
                         } else {
                             priceStream.disconnect();
-                            sellPosition(instrument, tick.ask)
-                            .then((trade) => {
-                                logger.log('debug', 'sell position',
-                                    {
-                                        ticker: tick.ticker,
-                                        stop: tick.stop,
-                                        ask: tick.ask,
-                                        quantity: instrument.quantity,
-                                    });
-                                logger.log('debug', 'trade confirmation', trade.toJSON());
-                                if (analytics) analytics.update(['bid', 'ask', 'stop', 'last'], ticks);
-                            }).catch((err) => { return null });
+                            if (process.env.EXECUTE != 0) {
+                                sellPosition(instrument, tick.ask)
+                                .then((trade) => {
+                                    logger.log('debug', 'sell position',
+                                        {
+                                            ticker: tick.ticker,
+                                            stop: tick.stop,
+                                            ask: tick.ask,
+                                            quantity: instrument.quantity
+                                        });
+                                    logger.log('debug', 'trade confirmation', trade.toJSON());
+                                }).catch((err) => { return null });
+                            } else {
+                                logger.log('debug', 'trade not executed (deactivated)', {
+                                    ticker: tick.ticker,
+                                    stop: tick.stop,
+                                    ask: tick.ask,
+                                    quantity: instrument.quantity
+                                });
+                            }
+                            if (analytics) analytics.update(['bid', 'ask', 'stop', 'last'], ticks);
                         }
                     }
                 }

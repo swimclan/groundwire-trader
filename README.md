@@ -2,17 +2,17 @@
 This is the GroundWire trading application.  It is a server that is configured to execute trades according to various built-in strategies.  Once positions are generated, the server will monitor price action using the Intrinio&trade; Real-Time Exchange websocket stream and implement a trailing stop loss for each stock position that it is configured to manage. The trailing stop loss algorithm is configurable to be less or more agressive in terms of price tracking so as to be intelligent about how to lock in profit margin or minimize loss.
 
 # Version
-1.14.0
+1.15.0
 <br>
 <em>See</em> [`CHANGELOG.md`](./CHANGELOG.md) <em>for more detailed view of all versions</em>
 
 # Routes
 
-| Route                          | HTTP Verb         | Request Body                        | Description                                                           |
-| ------------------------------ | ----------------- | ----------------------------------- | --------------------------------------------------------------------- |
+| Route                          | HTTP Verb         | Request Body                        | Description                                      |
+| ------------------------------ | ----------------- | ----------------------------------- | ------------------------------------------------ |
 | `/positions/create/:quantity?` | GET               | N/A                                 | This route when requested will kick off the purchasing of all instruments that are in the user's watch list.  Only tradeable instruments will be bought.  Orders with untradeable insrtuments will simply not be filled. An optional share quantity can be appended to the request URL.  If no share quantity is specified, the app will automatically determine how many shares to buy for each stock based on how much buying power is in account |
 | `/positions/create/:quantity?` | POST              | (1) `screenmax <integer>`: a number representing the max number of screened auto picks made for the user<br>(2) `screenfilters <string>` a string representing the stock screener filter on MSN<br>(3)`screenranges <string>` a string representing the stock screener ranges on MSN | This route is identical to the GET route above with the exception of the fact that it takes some stock screener config params as payload in the request body to allow users to set their own stock picking preferences.  When params are ommited from the request body, the app will fall back to its own config |
-| `/positions/trade`             | POST              | (1) `exclusions <string>`: a comma seperated list of tickers to ignore<br>(2) `stopmargin <float>`: A decimal value representing the percentage of the initial stop loss margin of the strategy in use<br>(3) `strategy <string>` The descriptor for the trailing stop-loss strategy desired (e.g. `slope`)<br>(4) `restrict <bool>` Switch to enforce strict single day position tracking.  If ommitted it will default to false<br>(5) `profitlock <float>` Specify a position profit margin that will trigger a break-even stop loss | This route will kick off the trading process for any stock positions currently in the market that are not in the exclusions list.  Once the best ask price is less than the current stop loss, it will execute a market sell into Robinhood at the last best ask price |
+| `/positions/trade`             | POST              | (1) `exclusions <string>`: a comma seperated list of tickers to ignore<br>(2) `stopmargin <float>`: A decimal value representing the percentage of the initial stop loss margin of the strategy in use<br>(3) `strategy <string>` The descriptor for the trailing stop-loss strategy desired (e.g. `slope`)<br>(4) `restrict <bool>` Switch to enforce strict single day position tracking.  If ommitted it will default to false<br>(5) `profitlock <float>` Specify a position profit margin that will trigger a break-even stop loss<br>(6) `maxspread <float>` The maximum spread % of the bid-ask<br>(7) `minstop <float>` The minimum stop margin that any strategy will compress to<br>(8) `c <float>` The "chase coefficient" | This route will kick off the trading process for any stock positions currently in the market that are not in the exclusions list.  Once the best ask price is less than the current stop loss, it will execute a market sell into Robinhood at the last best ask price |
 
 # Strategies
 
