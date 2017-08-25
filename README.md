@@ -2,7 +2,7 @@
 This is the GroundWire trading application.  It is a server that is configured to execute trades according to various built-in strategies.  Once positions are generated, the server will monitor price action using the Intrinio&trade; Real-Time Exchange websocket stream and implement a trailing stop loss for each stock position that it is configured to manage. The trailing stop loss algorithm is configurable to be less or more agressive in terms of price tracking so as to be intelligent about how to lock in profit margin or minimize loss.
 
 # Version
-1.15.0
+1.15.1
 <br>
 <em>See</em> [`CHANGELOG.md`](./CHANGELOG.md) <em>for more detailed view of all versions</em>
 
@@ -42,15 +42,14 @@ The trading app is aware of when positions were aqcuired in the market and will 
 
 # Security
 
-Username and password for the target Robinhood account must be stored as an environment variable on the server that is hosting the trading application.  The environment variables take the form:
+A bearer token for the target Robinhood account must be stored as an environment variable on the server that is hosting the trading application.  The environment variables take the form:
 
 Example:
 ```sh
-USERNAME=username
-PASSWORD=password
+TOKEN=token
 ```
 
-Where `username` and `password` are the username and password of the user's target Robinhood account.
+The bearer token must be acquired from a previous login on the RH API.  The Groundwire trading API can be used to acquire this token.
 
 Additionally, the target Robinhood account number must also be specified in order to target the correct buying power value when determining how many shares to purchase for each stock in the user's watch list.
 

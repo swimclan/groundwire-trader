@@ -36,8 +36,7 @@ let config = {
             options: {
                 method: 'get',
                 auth: {
-                    user: process.env.USERNAME,
-                    pass: process.env.PASSWORD
+                    bearer: process.env.TOKEN
                 },
                 agentOptions: {
                     cert: fs.readFileSync(path.join(__dirname, 'ssl', 'groundwire.co.crt')),
@@ -51,8 +50,7 @@ let config = {
             options: {
                 method: 'post',
                 auth: {
-                    user: process.env.USERNAME,
-                    pass: process.env.PASSWORD
+                    bearer: process.env.TOKEN
                 },
                 agentOptions: {
                     cert: fs.readFileSync(path.join(__dirname, 'ssl', 'groundwire.co.crt')),
@@ -60,6 +58,18 @@ let config = {
                     ca: fs.readFileSync(path.join(__dirname, 'ssl', 'groundwire.co.pem'))
                 },
                 strictSSL: process.env.STRICT_SSL != 0 ? true : false
+            }
+        }
+    },
+    user: {
+        api: {
+            url: {
+                production: "https://api.groundwire.co/v1/user",
+                development: "http://localhost:3000/v1/user"
+            },
+            secure: {
+                required: true,
+                key: "key"
             }
         }
     },

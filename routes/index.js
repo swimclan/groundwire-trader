@@ -4,6 +4,7 @@ var createPositions = require('../controllers/createPositions');
 var tradePositions = require('../controllers/tradePositions');
 var package = require('../package.json');
 var screenStocks = require('../controllers/screenStocks');
+var userLogin = require('../controllers/userlogin');
 
 /* Create Positions from Watchlist (GET) */
 router.get('/positions/create/:shares?', createPositions);
@@ -18,6 +19,9 @@ router.post('/positions/trade', tradePositions)
 router.get('/version', function(req, res, next) {
     res.json({ version: package.version });
 });
+
+/* Login with a username & password */
+router.post('/user/login', userLogin);
 
 /* Get the MSN screener */
 router.get('/screen', screenStocks);
