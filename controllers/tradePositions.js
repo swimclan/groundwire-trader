@@ -193,18 +193,13 @@ var excludePositions = function(positions) {
 var recentPosition = function(position) {
     return new Promise((resolve, reject) => {
         logger.log('debug', 'position order check', 'instrument: ' + utils.parseInstrumentIdFromUrl(position.instrument));
-        new Orders({instrument: utils.parseInstrumentIdFromUrl(position.instrument)}).fetch()
+        let lastTradingDay = utils.lastWeekday(options.holidays);
+        new Orders({instrument: utils.parseInstrumentIdFromUrl(position.instrument), date: lastTradingDay}).fetch()
         .then((orders) => {
             let _orders = orders.toJSON();
-            logger.log('debug', 'position order', _orders.length + ' orders found');
-            let found = false;
-            for (var i in _orders) {
-                if (utils.positionCreatedLastWeekday(_orders[i].created_at, options.holidays)) {
-                    logger.log('debug', 'position recency', "Position was created in the last trading day");
-                    found = true;
-                    break;
-                }
-            };
+            let num_yesterday_buys = _orders.filter((_order) => _order.side === 'buy').length
+            logger.log('debug', 'position order', num_yesterday_buys + ' orders found');
+            let found = num_yesterday_buys > 0;
             resolve(found || !options.restrict ? position : null);
         }).catch((err) => {
             logger.log('error', 'order fetch error', err);

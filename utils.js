@@ -139,3 +139,15 @@ module.exports.spreadTitle = function(title) {
     }
     return titlearr.join('');
 }
+
+module.exports.isoDateFormat = function(d) {
+    if (d instanceof Date) {
+        let mm = d.getMonth() + 1;
+        let dd = d.getDate();
+        let ret = [d.getFullYear(),
+            (mm>9 ? '' : '0') + mm,
+            (dd>9 ? '' : '0') + dd
+           ].join('-');
+        return ret;
+    }
+}

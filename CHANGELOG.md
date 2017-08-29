@@ -1,5 +1,6 @@
 | Version              | Type      | Description                                                                                               |
 | -------------------- | --------- | --------------------------------------------------------------------------------------------------------- |
+| **v1.15.2**          | *Feature* | Converted order check to use new recent order params from RH wrapper (node RH v.1.1.1)                    |
 | **v1.15.1**          | *Feature* | Converted to token based login from config                                                                |
 | **v1.15.0**          | *Feature* | Allowed for additional params to be sent to the position trade route for future user preferences portal.  |
 | **v1.14.0**          | *Feature* | Allowed for position create to respond to post request with custom screener params.  Config is fallback.  |

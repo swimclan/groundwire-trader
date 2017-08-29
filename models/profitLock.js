@@ -4,7 +4,6 @@ var Model = require('../lib/Model');
 
 class ProfitLock extends Model {
     constructor(options={}) {
-        console.log(options);
         super(options);
     }
     props() {
