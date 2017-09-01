@@ -1,5 +1,6 @@
 | Version              | Type      | Description                                                                                               |
 | -------------------- | --------- | --------------------------------------------------------------------------------------------------------- |
+| **v1.15.3**          | *Fix*     | Fixed bug where trading routine breaks when exclusions are not set in preferences                         |
 | **v1.15.2**          | *Feature* | Converted order check to use new recent order params from RH wrapper (node RH v.1.1.1)                    |
 | **v1.15.1**          | *Feature* | Converted to token based login from config                                                                |
 | **v1.15.0**          | *Feature* | Allowed for additional params to be sent to the position trade route for future user preferences portal.  |

@@ -30,6 +30,8 @@ module.exports = function(req, res, next) {
 
     if (preferences.has('exclusions')) {
         preferences.set('exclusions', utils.splitStringList(preferences.get('exclusions')));
+    } else {
+        preferences.set('exclusions', []);
     }
     
     if (!preferences.has('stopmargin')) {
