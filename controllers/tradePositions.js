@@ -213,7 +213,7 @@ var recentPosition = function(position) {
 var trackPosition = function(priceStream, instrument, analytics) {
     return new Promise((resolve, reject) => {
         // The container that will house all data about the state of the current tick of market data
-        var tick = {}, ticks = [];;
+        var tick = {}, ticks = [], ma_spreads = [];
 
         var stopPrice, 
         currentMargin,
@@ -221,6 +221,8 @@ var trackPosition = function(priceStream, instrument, analytics) {
         bestAsk = 0, 
         newHigh, 
         firstAsk,
+        spread,
+        spread_ma,
         dayMargin;
 
         switch (process.env.SIMULATE) {
@@ -257,9 +259,15 @@ var trackPosition = function(priceStream, instrument, analytics) {
                         tick.last = frame.price;
                 }
                 if (_.has(tick, 'bid') && _.has(tick, 'ask')) {
-                    var maxdiff = options.maxSpread * tick.ask;
-                    var mindiff = options.minSpread * tick.ask;
-                    if (((tick.ask - tick.bid) < maxdiff) && ((tick.ask - tick.bid) > mindiff) && (tick.ask - tick.bid > 0)) {
+                    spread = tick.ask - tick.bid;
+                    ma_spreads.push(spread);
+                    if (ma_spreads.length > config.get('trading.spread.moving_average_period')) ma_spreads.shift();
+                    spread_ma = _.mean(ma_spreads);
+                    var maxdiff = spread_ma * (1 + options.maxSpread);
+                    var mindiff = options.minSpread < 1 ? spread_ma * options.minSpread: 0;
+                    if ((spread < maxdiff) && (spread > mindiff) && (spread > 0)) {
+                        tick.spread = spread;
+                        tick.spread_ma = spread_ma;
                         if (analytics) ticks.push(_.assign({}, tick));
                         // calculate profit margins
                         currentMargin = (tick.ask - instrument.cost) / instrument.cost;

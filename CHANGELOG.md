@@ -1,5 +1,6 @@
 | Version              | Type      | Description                                                                                               |
 | -------------------- | --------- | --------------------------------------------------------------------------------------------------------- |
+| **v1.16.0**          | *Feature* | Calculate spread moving average in trade routine and serve as basis of max spread logic                   |
 | **v1.15.3**          | *Fix*     | Fixed bug where trading routine breaks when exclusions are not set in preferences                         |
 | **v1.15.2**          | *Feature* | Converted order check to use new recent order params from RH wrapper (node RH v.1.1.1)                    |
 | **v1.15.1**          | *Feature* | Converted to token based login from config                                                                |

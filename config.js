@@ -24,7 +24,8 @@ let config = {
     trading: {
         spread: {
             min: 0,
-            max: 0.015
+            max: 0.5,
+            moving_average_period: 10
         },
         strategies: {
             minStopMargin: 0.001,
