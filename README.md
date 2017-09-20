@@ -2,7 +2,7 @@
 This is the GroundWire trading application.  It is a server that is configured to execute trades according to various built-in strategies.  Once positions are generated, the server will monitor price action using the Intrinio&trade; Real-Time Exchange websocket stream and implement a trailing stop loss for each stock position that it is configured to manage. The trailing stop loss algorithm is configurable to be less or more agressive in terms of price tracking so as to be intelligent about how to lock in profit margin or minimize loss.
 
 # Version
-1.16.0
+1.17.0
 <br>
 <em>See</em> [`CHANGELOG.md`](./CHANGELOG.md) <em>for more detailed view of all versions</em>
 
@@ -39,6 +39,10 @@ The trading app will observe all posted market holidays and will not attempt to 
 # Interday swing trading
 
 The trading app is aware of when positions were aqcuired in the market and will allow positions to be tracked over the course of multiple days.  Logic has been introduced to prevent the app from re-tracking a position that is already under monitor just because the position remained live beyond the first day.  Trading app will also treat weekday holidays as not-a-weekday and find positions to monitor that entered the market on the day prior to the holiday.
+
+# Sweeper
+
+Sweeper is a default mode that allows the app to check the state of a sell order immediately after is has been placed.  If the order is still pending or in a `placed` state and is stranded in the account not getting filled, the app will cancel and re-place the order in the hopes of getting a fill quickly.  The time interval to wait to check is configurable and so is the number of order retries.
 
 # Security
 

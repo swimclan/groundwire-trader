@@ -15,6 +15,7 @@ var Holidays = require('../collections/holidays');
 var Orders = require('../collections/orders');
 var ProfitLock = require('../models/profitLock');
 var Preferences = require('../models/preferences');
+var Sweeper = require('../lib/Sweeper');
 var Logger = require('../Logger');
 
 let logger = new Logger(config.get('log.level'), config.get('log.file'));
@@ -316,6 +317,7 @@ var trackPosition = function(priceStream, instrument, analytics) {
                                             quantity: instrument.quantity
                                         });
                                     logger.log('debug', 'trade confirmation', trade.toJSON());
+                                    if (process.env.SWEEPER != 0) sweep(trade);
                                 }).catch((err) => { return null });
                             } else {
                                 logger.log('debug', 'trade not executed (deactivated)', {
@@ -353,4 +355,16 @@ var sellPosition = function(instrument, price) {
             resolve(trade);
         }).catch((err) => { reject(err); });
     });
+}
+
+var sweep = function(trade) {
+    setTimeout(function() {
+        new Sweeper({trade: trade.toJSON()}).sweep()
+        .then((inst) => {
+            logger.log('info', 'Sweeper successfully completed', inst);
+        })
+        .catch((err) => {
+            logger.log('error', 'Sweeper error', 'Something went wrong with the sweeper');
+        });
+    }, config.get('sweeper.interval'));
 }

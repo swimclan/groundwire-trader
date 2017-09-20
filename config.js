@@ -32,6 +32,10 @@ let config = {
             c: 1
         }
     },
+    sweeper: {
+        retries: 5,
+        interval: 5000
+    },
     ajax: {
         fetch: {
             options: {
@@ -50,6 +54,20 @@ let config = {
         create: {
             options: {
                 method: 'post',
+                auth: {
+                    bearer: process.env.TOKEN
+                },
+                agentOptions: {
+                    cert: fs.readFileSync(path.join(__dirname, 'ssl', 'groundwire.co.crt')),
+                    key: fs.readFileSync(path.join(__dirname, 'ssl', 'groundwire.co.key')),
+                    ca: fs.readFileSync(path.join(__dirname, 'ssl', 'groundwire.co.pem'))
+                },
+                strictSSL: process.env.STRICT_SSL != 0 ? true : false
+            }
+        },
+        destroy: {
+            options: {
+                method: 'delete',
                 auth: {
                     bearer: process.env.TOKEN
                 },
@@ -155,6 +173,18 @@ let config = {
             url: {
                 production: "https://api.groundwire.co/v1/queue",
                 development: "http://localhost:3000/v1/queue"
+            },
+            secure: {
+                required: true,
+                key: "key"
+            }
+        }
+    },
+    cancel: {
+        api: {
+            url: {
+                production: "https://api.groundwire.co/v1/cancel",
+                development: "http://localhost:3000/v1/cancel"
             },
             secure: {
                 required: true,

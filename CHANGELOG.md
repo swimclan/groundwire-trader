@@ -1,5 +1,6 @@
 | Version              | Type      | Description                                                                                               |
 | -------------------- | --------- | --------------------------------------------------------------------------------------------------------- |
+| **v1.17.0**          | *Feature* | Introduced sweeper feature to force stranded market orders to fill using a repeated cancel/sell interval  |
 | **v1.16.0**          | *Feature* | Calculate spread moving average in trade routine and serve as basis of max spread logic                   |
 | **v1.15.3**          | *Fix*     | Fixed bug where trading routine breaks when exclusions are not set in preferences                         |
 | **v1.15.2**          | *Feature* | Converted order check to use new recent order params from RH wrapper (node RH v.1.1.1)                    |
