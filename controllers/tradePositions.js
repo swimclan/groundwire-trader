@@ -304,6 +304,9 @@ var trackPosition = function(priceStream, instrument, analytics) {
                             tick.lastbid = _.has(tick, 'bid') ? tick.bid : null;
                             tick.lastask = _.has(tick, 'ask') ? tick.ask : null;
                             tick.lastlast = _.has(tick, 'last') ? tick.last : null;
+                            priceStream.emit('tick', {id: priceStream.socket.id, tick: tick}, (resp) => {
+                                logger.log('debug', 'socket response', resp);
+                            });
                         } else {
                             priceStream.disconnect();
                             if (process.env.EXECUTE != 0) {

@@ -1,5 +1,6 @@
 | Version              | Type      | Description                                                                                               |
 | -------------------- | --------- | --------------------------------------------------------------------------------------------------------- |
+| **v1.17.1**          | *Feature* | Socket client emits current tick data back to api for external monitoring of position performance         |
 | **v1.17.0**          | *Feature* | Introduced sweeper feature to force stranded market orders to fill using a repeated cancel/sell interval  |
 | **v1.16.0**          | *Feature* | Calculate spread moving average in trade routine and serve as basis of max spread logic                   |
 | **v1.15.3**          | *Fix*     | Fixed bug where trading routine breaks when exclusions are not set in preferences                         |
