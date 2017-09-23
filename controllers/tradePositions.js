@@ -320,7 +320,10 @@ var trackPosition = function(priceStream, instrument, analytics) {
                                             quantity: instrument.quantity
                                         });
                                     logger.log('debug', 'trade confirmation', trade.toJSON());
-                                    if (process.env.SWEEPER != 0) sweep(trade);
+                                    if (process.env.SWEEPER === '1') {
+                                        logger.log('debug', 'Initiating Sweep', trade.toJSON().instrument);
+                                        sweep(trade);
+                                    }
                                 }).catch((err) => { return null });
                             } else {
                                 logger.log('debug', 'trade not executed (deactivated)', {
