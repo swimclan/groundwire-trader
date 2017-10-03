@@ -12,7 +12,7 @@ let config = {
         enabled: true
     },
     screener: {
-        max: 3
+        max: 5
     },
     timeouts: {
         trade: 200
@@ -29,7 +29,7 @@ let config = {
         },
         strategies: {
             minStopMargin: 0.001,
-            c: 1
+            c: 1.25
         }
     },
     sweeper: {
@@ -238,8 +238,8 @@ let config = {
                 required: false
             },
             query: {
-                filters: "DiffYlDl|Yes~ExSn|ASE;NAS;NYS~Country|USA",
-                ranges: "RtCap|0;8359~Mc|500000000;762600000000~Dh|0;25~Dl|0;25",
+                filters: "DiffYlDl|Yes~StkTyp|Classic Growth;Slow Growth~Country|USA",
+                ranges: "RtCap|0;8359~Mc|500000000;762600000000~Dh|25;75~Dl|25;75",
                 sortedby: "Mc",
                 sortorder: "DESC",
                 count: 20,
