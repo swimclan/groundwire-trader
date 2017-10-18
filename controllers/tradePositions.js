@@ -215,12 +215,12 @@ var trackPosition = function(priceStream, instrument, analytics) {
     return new Promise((resolve, reject) => {
         // The container that will house all data about the state of the current tick of market data
         var tick = {}, ticks = [], ma_spreads = [];
+        tick.bestAsk = 0;
 
-        var stopPrice, 
+        var stopPrice,
         currentMargin,
-        bestProfitMargin = -Infinity, 
-        bestAsk = 0, 
-        newHigh, 
+        bestProfitMargin = -Infinity,
+        newHigh,
         firstAsk,
         spread,
         spread_ma,
@@ -265,7 +265,7 @@ var trackPosition = function(priceStream, instrument, analytics) {
                     if (ma_spreads.length > config.get('trading.spread.moving_average_period')) ma_spreads.shift();
                     spread_ma = _.mean(ma_spreads);
                     var maxdiff = spread_ma * (1 + options.maxSpread);
-                    var mindiff = options.minSpread < 1 ? spread_ma * options.minSpread: 0;
+                    var mindiff = options.minSpread < 1 ? spread_ma * options.minSpread : 0;
                     if ((spread < maxdiff) && (spread > mindiff) && (spread > 0)) {
                         tick.spread = spread;
                         tick.spread_ma = spread_ma;
@@ -275,8 +275,8 @@ var trackPosition = function(priceStream, instrument, analytics) {
                         bestProfitMargin = currentMargin > bestProfitMargin ? currentMargin : bestProfitMargin;
                         dayMargin = (tick.ask - firstAsk) / firstAsk;
                         // Calculate best ask
-                        newHigh = tick.ask > bestAsk;
-                        bestAsk = newHigh ? tick.ask : bestAsk;
+                        newHigh = tick.ask > tick.bestAsk;
+                        tick.bestAsk = newHigh ? tick.ask : tick.bestAsk;
                         // Initial stop price or calculated new stopPrice from strategy execution
                         if (!stopPrice) {
                             stopPrice = tick.ask / (1 + options.stopMargin)
@@ -333,7 +333,7 @@ var trackPosition = function(priceStream, instrument, analytics) {
                                     quantity: instrument.quantity
                                 });
                             }
-                            if (analytics) analytics.update(['bid', 'ask', 'stop', 'last'], ticks);
+                            if (analytics) analytics.update(['bid', 'ask', 'stop', 'last', 'bestAsk', 'spread', 'spread_ma'], ticks);
                         }
                     }
                 }

@@ -1,5 +1,6 @@
 | Version              | Type      | Description                                                                                               |
 | -------------------- | --------- | --------------------------------------------------------------------------------------------------------- |
+| **v1.17.3**          | *Feature* | Added bestAsk, spread and spread moving average to the analytics data collection                          |
 | **v1.17.2**          | *Fix*     | Fixed the sweeper module to correctly identify scenario when sweep is successful                          |
 | **v1.17.1**          | *Feature* | Socket client emits current tick data back to api for external monitoring of position performance         |
 | **v1.17.0**          | *Feature* | Introduced sweeper feature to force stranded market orders to fill using a repeated cancel/sell interval  |
