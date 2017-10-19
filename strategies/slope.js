@@ -2,17 +2,16 @@
 var utils = require('../utils');
 
 module.exports = function(args) {
-    var ret = null;
-    if (utils.hasKey('lastPrice', args)
-     && utils.hasKey('currentPrice', args)
-     && utils.hasKey('lastStop', args)
-     && utils.hasKey('coefficient', args)
-     && utils.hasKey('minStopMargin', args)) {
-        let priceSlope = args.currentPrice - args.lastPrice;
-        let stopSlope = args.coefficient * priceSlope;
-        let stopMarginCheck = (args.currentPrice - (stopSlope + args.lastStop)) / args.currentPrice;
-
-        ret = (priceSlope > 0) && (stopMarginCheck > args.minStopMargin) ? stopSlope + args.lastStop : args.lastStop;
-    }
-    return ret;
+  var ret = null;
+  if (utils.hasKey('lastPrice', args)
+  && utils.hasKey('currentPrice', args)
+  && utils.hasKey('lastStop', args)
+  && utils.hasKey('coefficient', args)
+  && utils.hasKey('minStopMargin', args)) {
+    let priceSlope = args.currentPrice - args.lastPrice;
+    let stopSlope = args.coefficient * priceSlope;
+    let stopMarginCheck = (args.currentPrice - (stopSlope + args.lastStop)) / args.currentPrice;
+    ret = (priceSlope > 0) && (stopMarginCheck > args.minStopMargin) ? stopSlope + args.lastStop : args.lastStop;
+  }
+  return ret;
 }

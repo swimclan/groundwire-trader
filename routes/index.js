@@ -17,7 +17,7 @@ router.post('/positions/trade', tradePositions)
 
 /* Get the version number of the application */
 router.get('/version', function(req, res, next) {
-    res.json({ version: package.version });
+  res.json({ version: package.version });
 });
 
 /* Login with a username & password */
